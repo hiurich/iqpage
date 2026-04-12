@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PageIQ — Chat</title>
+  <link rel="stylesheet" href="styles/sidepanel.css" />
+</head>
+<body>
+  <!-- Header -->
+  <div class="panel-header">
+    <div class="header-left">
+      <div class="logo-sm">IQ</div>
+      <div>
+        <div class="app-name">PageIQ</div>
+        <div id="page-domain" class="page-domain">Loading...</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span id="plan-badge" class="badge">FREE</span>
+      <button id="btn-tab-chat" class="tab-btn active">💬 Chat</button>
+      <button id="btn-tab-history" class="tab-btn">🕒 History</button>
+      <button id="btn-tab-citations" class="tab-btn">📌 Citations</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+
+  <!-- CHAT TAB -->
+  <div id="tab-chat" class="tab-content">
+    <!-- Context bar -->
+    <div class="context-bar">
+      <span id="context-status" class="context-ok">✓ Page context loaded</span>
+      <button id="btn-reload-context" class="btn-tiny">↻ Reload</button>
+    </div>
+
+    <!-- Messages -->
+    <div id="chat-messages" class="chat-messages">
+      <div class="welcome-msg">
+        <p>Hello! I'm <strong>PageIQ</strong>. I've read this page and I'm ready to answer your questions.</p>
+        <p style="margin-top:8px;color:#64748b;font-size:12px">Ask me anything about the content.</p>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <textarea
+        id="chat-input"
+        placeholder="Ask a question about this page..."
+        rows="2"
+      ></textarea>
+      <button id="btn-send" class="btn-send">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+
+    <!-- Suggested prompts -->
+    <div class="suggested-prompts">
+      <button class="suggest-btn" data-prompt="What is the main argument of this article?">Main argument</button>
+      <button class="suggest-btn" data-prompt="What are the key facts presented?">Key facts</button>
+      <button class="suggest-btn" data-prompt="What conclusions does the author draw?">Conclusions</button>
+      <button class="suggest-btn" data-prompt="What are potential weaknesses in this content?">Weaknesses</button>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="tab-history" class="tab-content hidden">
+    <div class="tab-toolbar">
+      <input id="history-domain-filter" type="text" placeholder="Filter by domain..." class="filter-input" />
+      <button id="btn-clear-history-filter" class="btn-tiny">Clear</button>
+    </div>
+    <div id="history-list" class="history-list">
+      <div class="empty-state">Loading history...</div>
+    </div>
+  </div>
+
+  <!-- CITATIONS TAB -->
+  <div id="tab-citations" class="tab-content hidden">
+    <div class="tab-toolbar">
+      <span id="citations-domain-label" class="domain-label">Current domain</span>
+      <button id="btn-export-citations-md" class="btn-tiny">Export MD</button>
+    </div>
+    <div id="citations-list" class="citations-list">
+      <div class="empty-state">No citations saved for this domain yet.</div>
+    </div>
+  </div>
+
+  <!-- Offline banner -->
+  <div id="offline-banner" class="offline-banner hidden">
+    ⚡ Offline mode — showing cached summaries
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
