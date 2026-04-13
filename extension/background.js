@@ -6,9 +6,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // ─── Side Panel ──────────────────────────────────────────────────────────────
 
-// Keep the popup as the default action click behavior.
-// The side panel is opened explicitly via the button inside the popup.
-// Setting openPanelOnActionClick:true would suppress the popup entirely.
+// Explicitly disable "open side panel on action click" so the popup opens.
+// This setting is PERSISTED by Chrome — removing the old call isn't enough;
+// we must actively set it to false on every SW startup to override any
+// previously stored true value.
+chrome.sidePanel
+  .setPanelBehavior({ openPanelOnActionClick: false })
+  .catch(() => {}); // Silently ignore if sidePanel API not available
 
 // ─── Context Menu ─────────────────────────────────────────────────────────────
 
@@ -104,39 +108,67 @@ async function getAuthToken() {
   return { jwt: jwt ?? null };
 }
 
+/**
+ * Step 1 — chrome.identity.getAuthToken()
+ *   Chrome handles the entire OAuth dance for "Chrome Extension" type clients.
+ *   No redirect_uri is involved, so redirect_uri_mismatch is impossible.
+ *   Returns a Google OAuth2 access token from Chrome's internal token cache.
+ *
+ * Step 2 — Supabase signInWithIdToken (REST)
+ *   POST /auth/v1/token?grant_type=id_token
+ *   Supabase calls Google's tokeninfo endpoint to validate the access token,
+ *   then creates/returns a Supabase session for the Google user.
+ *
+ * Prerequisites in Google Cloud Console (important):
+ *   - OAuth client type must be "Chrome Extension"
+ *   - Application ID must be set to your extension's ID (from chrome://extensions)
+ *   - The same client_id must be in manifest.json → oauth2.client_id
+ *
+ * Prerequisites in Supabase dashboard:
+ *   - Authentication → Providers → Google → must be enabled
+ *   - Google Client ID and Secret must be filled in (same client_id as manifest)
+ */
 async function signIn() {
   try {
-    const redirectUrl = chrome.identity.getRedirectURL();
-    const authUrl =
-      `${SUPABASE_URL}/auth/v1/authorize?` +
-      `provider=google&` +
-      `redirect_to=${encodeURIComponent(redirectUrl)}&` +
-      `response_type=code&` +
-      `scopes=openid email profile`;
-
-    const responseUrl = await chrome.identity.launchWebAuthFlow({
-      url: authUrl,
-      interactive: true,
+    // ── Step 1: Get Google OAuth token via Chrome Identity API ──────────────
+    // Chrome uses the oauth2.client_id from manifest.json automatically.
+    // No redirect URI, no popup — Chrome handles the auth flow natively.
+    const googleToken = await new Promise((resolve, reject) => {
+      chrome.identity.getAuthToken({ interactive: true }, (token) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else if (!token) {
+          reject(new Error('Google did not return a token. Check oauth2.client_id in manifest.json.'));
+        } else {
+          resolve(token);
+        }
+      });
     });
 
-    // Extract code from redirect URL
-    const url = new URL(responseUrl);
-    const code = url.searchParams.get('code');
-    if (!code) throw new Error('No auth code received');
-
-    // Exchange code for session
-    const tokenRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=pkce`, {
+    // ── Step 2: Exchange Google token with Supabase ──────────────────────────
+    // Supabase's grant_type=id_token endpoint accepts Google access tokens
+    // and validates them against Google's tokeninfo API internally.
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=id_token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_ANON_KEY,
       },
-      body: JSON.stringify({ auth_code: code, redirect_uri: redirectUrl }),
+      body: JSON.stringify({
+        provider: 'google',
+        id_token: googleToken,
+      }),
     });
 
-    const session = await tokenRes.json();
-    if (!session.access_token) throw new Error('Failed to exchange code for token');
+    const session = await res.json();
 
+    if (!res.ok || !session.access_token) {
+      // Provide a clear error message — common causes surfaced here:
+      const detail = session.error_description ?? session.msg ?? session.error ?? `HTTP ${res.status}`;
+      throw new Error(`Supabase auth failed: ${detail}`);
+    }
+
+    // ── Step 3: Persist session ──────────────────────────────────────────────
     await chrome.storage.local.set({
       jwt: session.access_token,
       refresh_token: session.refresh_token,
@@ -144,13 +176,29 @@ async function signIn() {
     });
 
     return { success: true, user: session.user };
+
   } catch (err) {
-    console.error('Sign in error:', err);
+    console.error('[PageIQ] Sign in error:', err);
     return { success: false, error: err.message };
   }
 }
 
 async function signOut() {
+  // Revoke the cached Google token so Chrome doesn't reuse it silently.
+  try {
+    const cachedToken = await new Promise((resolve) => {
+      chrome.identity.getAuthToken({ interactive: false }, (token) => {
+        resolve(chrome.runtime.lastError ? null : token);
+      });
+    });
+    if (cachedToken) {
+      // Remove from Chrome's token cache.
+      await new Promise((resolve) => chrome.identity.removeCachedAuthToken({ token: cachedToken }, resolve));
+      // Revoke on Google's side (best-effort, don't block sign-out if this fails).
+      fetch(`https://accounts.google.com/o/oauth2/revoke?token=${cachedToken}`).catch(() => {});
+    }
+  } catch {}
+
   await chrome.storage.local.remove(['jwt', 'refresh_token', 'user']);
   return { success: true };
 }

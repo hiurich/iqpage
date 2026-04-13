@@ -65,6 +65,7 @@ body {
   font-size: 12px; line-height: 1.4; text-align: left;
 }
 .auth-error { background: #2d1515; border: 1px solid #7f1d1d; color: #fca5a5; }
+.auth-info  { background: #1e2d1e; border: 1px solid #166534; color: #86efac; }
 .auth-fine-print { color: #475569; font-size: 11px; line-height: 1.5; }
 
 /* view-main needs relative so the loading overlay is scoped to it */
