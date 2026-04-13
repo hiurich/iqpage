@@ -1,9 +1,6 @@
-/**
- * Selects the appropriate Claude model based on user plan, task type, and content length.
- */
 function selectModel({ userPlan, task, wordCount = 0 }) {
   if (userPlan === 'free' || userPlan === 'edu') {
-    return 'claude-haiku-4-5-20251001';
+    return 'claude-haiku-4-5';
   }
 
   const complexTasks = [
@@ -15,15 +12,14 @@ function selectModel({ userPlan, task, wordCount = 0 }) {
   ];
 
   if (userPlan === 'power') {
-    return 'claude-sonnet-4-5-20251001';
+    return 'claude-sonnet-4-5';
   }
 
-  // Pro plan: use Sonnet for complex tasks or long content
   if (complexTasks.includes(task) || wordCount > 1500) {
-    return 'claude-sonnet-4-5-20251001';
+    return 'claude-sonnet-4-5';
   }
 
-  return 'claude-haiku-4-5-20251001';
+  return 'claude-haiku-4-5';
 }
 
 module.exports = { selectModel };
