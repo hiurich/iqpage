@@ -16,11 +16,6 @@
   ],
   "host_permissions": ["<all_urls>"],
 
-  "oauth2": {
-    "client_id": "946684141879-peces0ntjuc55htbmtda5g1pjjvhmn5f.apps.googleusercontent.com",
-    "scopes": ["openid", "email", "profile"]
-  },
-
   "background": {
     "service_worker": "background.js"
   },

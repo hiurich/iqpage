@@ -103,51 +103,94 @@ async function handleMessage(message, sender) {
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
+// Web OAuth 2.0 client ID (NOT the Chrome Extension type client).
+// In Google Cloud Console: Credentials → Web application client.
+// Authorized redirect URIs must include: https://<extension-id>.chromiumapp.org/
+// Get your extension ID from chrome://extensions (enable Developer mode).
+const GOOGLE_WEB_CLIENT_ID = '946684141879-3gjnvkjjatv4tte01bta8b13sb5t42bk.apps.googleusercontent.com';
+
+/**
+ * Hashes a string with SHA-256 and returns a lowercase hex string.
+ * Required by the OIDC implicit flow: Google embeds the hashed nonce in the
+ * id_token, and Supabase hashes the raw nonce to verify it matches.
+ */
+async function sha256hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 async function getAuthToken() {
   const { jwt } = await chrome.storage.local.get('jwt');
   return { jwt: jwt ?? null };
 }
 
 /**
- * Step 1 — chrome.identity.getAuthToken()
- *   Chrome handles the entire OAuth dance for "Chrome Extension" type clients.
- *   No redirect_uri is involved, so redirect_uri_mismatch is impossible.
- *   Returns a Google OAuth2 access token from Chrome's internal token cache.
+ * Auth flow: launchWebAuthFlow → Google id_token → Supabase signInWithIdToken
  *
- * Step 2 — Supabase signInWithIdToken (REST)
- *   POST /auth/v1/token?grant_type=id_token
- *   Supabase calls Google's tokeninfo endpoint to validate the access token,
- *   then creates/returns a Supabase session for the Google user.
+ * Why this works (and getAuthToken didn't):
+ *   - chrome.identity.getAuthToken() returns an opaque OAUTH2 ACCESS token.
+ *     Supabase's grant_type=id_token verifies token signature — it needs a JWT.
+ *   - launchWebAuthFlow with response_type=id_token asks Google to return an
+ *     actual signed JWT (id_token) in the redirect URL fragment. ✓
  *
- * Prerequisites in Google Cloud Console (important):
- *   - OAuth client type must be "Chrome Extension"
- *   - Application ID must be set to your extension's ID (from chrome://extensions)
- *   - The same client_id must be in manifest.json → oauth2.client_id
+ * Google Cloud Console setup (Web application client):
+ *   1. Create a new OAuth 2.0 client → type: "Web application"
+ *   2. Authorized redirect URIs → add the URL printed by:
+ *        chrome.identity.getRedirectURL()  (run in background console)
+ *      Format: https://<extension-id>.chromiumapp.org/
+ *   3. Copy the Client ID into GOOGLE_WEB_CLIENT_ID above.
  *
- * Prerequisites in Supabase dashboard:
- *   - Authentication → Providers → Google → must be enabled
- *   - Google Client ID and Secret must be filled in (same client_id as manifest)
+ * Supabase dashboard setup:
+ *   Authentication → Providers → Google → enable, paste the same Client ID +
+ *   Client Secret from the Web application client.
  */
 async function signIn() {
   try {
-    // ── Step 1: Get Google OAuth token via Chrome Identity API ──────────────
-    // Chrome uses the oauth2.client_id from manifest.json automatically.
-    // No redirect URI, no popup — Chrome handles the auth flow natively.
-    const googleToken = await new Promise((resolve, reject) => {
-      chrome.identity.getAuthToken({ interactive: true }, (token) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-        } else if (!token) {
-          reject(new Error('Google did not return a token. Check oauth2.client_id in manifest.json.'));
-        } else {
-          resolve(token);
+    // ── Step 1: Build the Google OIDC authorization URL ─────────────────────
+    const redirectUrl = chrome.identity.getRedirectURL(); // https://<id>.chromiumapp.org/
+
+    // Raw nonce — sent to Supabase so it can verify the id_token's nonce claim.
+    const rawNonce = crypto.randomUUID();
+    // Hashed nonce — embedded by Google inside the id_token.
+    const hashedNonce = await sha256hex(rawNonce);
+
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', GOOGLE_WEB_CLIENT_ID);
+    authUrl.searchParams.set('response_type', 'id_token');
+    authUrl.searchParams.set('redirect_uri', redirectUrl);
+    authUrl.searchParams.set('scope', 'openid email profile');
+    authUrl.searchParams.set('nonce', hashedNonce);   // hashed nonce → Google embeds in JWT
+    authUrl.searchParams.set('prompt', 'select_account'); // always show account picker
+
+    // ── Step 2: Open Google's sign-in page via Chrome Identity ──────────────
+    const responseUrl = await new Promise((resolve, reject) => {
+      chrome.identity.launchWebAuthFlow(
+        { url: authUrl.toString(), interactive: true },
+        (url) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else if (!url) {
+            reject(new Error('Auth flow closed without a response.'));
+          } else {
+            resolve(url);
+          }
         }
-      });
+      );
     });
 
-    // ── Step 2: Exchange Google token with Supabase ──────────────────────────
-    // Supabase's grant_type=id_token endpoint accepts Google access tokens
-    // and validates them against Google's tokeninfo API internally.
+    // ── Step 3: Extract id_token from the redirect URL fragment (#) ─────────
+    // Google returns tokens in the hash, not the query string.
+    const fragment = new URLSearchParams(new URL(responseUrl).hash.slice(1));
+    const idToken = fragment.get('id_token');
+    if (!idToken) {
+      const errDesc = fragment.get('error_description') ?? fragment.get('error') ?? 'id_token missing';
+      throw new Error(`Google did not return an id_token: ${errDesc}`);
+    }
+
+    // ── Step 4: Exchange id_token with Supabase ──────────────────────────────
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=id_token`, {
       method: 'POST',
       headers: {
@@ -156,19 +199,18 @@ async function signIn() {
       },
       body: JSON.stringify({
         provider: 'google',
-        id_token: googleToken,
+        id_token: idToken,
+        nonce: rawNonce, // raw nonce — Supabase hashes this and checks against JWT claim
       }),
     });
 
     const session = await res.json();
-
     if (!res.ok || !session.access_token) {
-      // Provide a clear error message — common causes surfaced here:
       const detail = session.error_description ?? session.msg ?? session.error ?? `HTTP ${res.status}`;
       throw new Error(`Supabase auth failed: ${detail}`);
     }
 
-    // ── Step 3: Persist session ──────────────────────────────────────────────
+    // ── Step 5: Persist the Supabase session ────────────────────────────────
     await chrome.storage.local.set({
       jwt: session.access_token,
       refresh_token: session.refresh_token,
@@ -184,18 +226,14 @@ async function signIn() {
 }
 
 async function signOut() {
-  // Revoke the cached Google token so Chrome doesn't reuse it silently.
+  // Best-effort: notify Supabase to invalidate the server-side session.
   try {
-    const cachedToken = await new Promise((resolve) => {
-      chrome.identity.getAuthToken({ interactive: false }, (token) => {
-        resolve(chrome.runtime.lastError ? null : token);
-      });
-    });
-    if (cachedToken) {
-      // Remove from Chrome's token cache.
-      await new Promise((resolve) => chrome.identity.removeCachedAuthToken({ token: cachedToken }, resolve));
-      // Revoke on Google's side (best-effort, don't block sign-out if this fails).
-      fetch(`https://accounts.google.com/o/oauth2/revoke?token=${cachedToken}`).catch(() => {});
+    const { jwt } = await chrome.storage.local.get('jwt');
+    if (jwt) {
+      fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${jwt}` },
+      }).catch(() => {});
     }
   } catch {}
 
