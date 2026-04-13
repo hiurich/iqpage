@@ -1,14 +1,14 @@
 // PageIQ — Background Service Worker (Manifest V3)
 
-const BACKEND_URL = 'iqpage-production.up.railway.app';
+const BACKEND_URL = 'https://iqpage-production.up.railway.app';
 const SUPABASE_URL = 'https://vwpdzxhwnztcfvyuhxaz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3cGR6eGh3bnp0Y2Z2eXVoeGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjkyNzksImV4cCI6MjA5MTYwNTI3OX0.GX-EKJUH0-5PL5bkX7zA_0ldeWTN7XZiFWsBxRDv5MY';
 
 // ─── Side Panel ──────────────────────────────────────────────────────────────
 
-chrome.sidePanel
-  .setPanelBehavior({ openPanelOnActionClick: true })
-  .catch(console.error);
+// Keep the popup as the default action click behavior.
+// The side panel is opened explicitly via the button inside the popup.
+// Setting openPanelOnActionClick:true would suppress the popup entirely.
 
 // ─── Context Menu ─────────────────────────────────────────────────────────────
 
@@ -76,6 +76,9 @@ async function handleMessage(message, sender) {
 
     case 'GET_PAGE_CONTEXT':
       return getPageContext(sender.tab);
+
+    case 'GET_TAB_CONTEXTS':
+      return getTabContexts(message.tabIds);
 
     case 'SAVE_CITATION':
       return saveCitation(message.citation);
@@ -181,21 +184,60 @@ async function apiRequest(endpoint, method = 'POST', body = null) {
 
 // ─── Page Context ─────────────────────────────────────────────────────────────
 
-async function getPageContext(tab) {
-  if (!tab?.id) return { text: '', url: '', title: '' };
+async function getPageContext(senderTab) {
+  // Prefer the tab that sent the message; fall back to the active tab in the
+  // focused window (needed when the call comes from popup or side panel).
+  let tabId = senderTab?.id;
+
+  if (!tabId) {
+    const [activeTab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    tabId = activeTab?.id;
+  }
+
+  if (!tabId) return { text: '', url: '', title: '', error: 'No active tab found' };
+
+  // chrome:// and edge:// pages cannot be scripted — bail out early.
+  let tabInfo;
+  try {
+    tabInfo = await chrome.tabs.get(tabId);
+  } catch {
+    return { text: '', url: '', title: '', error: 'Cannot access tab info' };
+  }
+
+  const url = tabInfo.url ?? '';
+  if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') ||
+      url.startsWith('edge://') || url.startsWith('about:')) {
+    return { text: '', url, title: tabInfo.title ?? '', error: 'Cannot script browser pages' };
+  }
+
   try {
     const results = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => ({
-        text: document.body.innerText,
-        url: location.href,
-        title: document.title,
-      }),
+      target: { tabId },
+      func: () => {
+        // Prefer article / main content; fall back to full body text.
+        const article = document.querySelector('article, main, [role="main"]');
+        const text = (article ?? document.body).innerText ?? '';
+        return {
+          text,
+          url: location.href,
+          title: document.title,
+        };
+      },
     });
-    return results[0]?.result ?? { text: '', url: '', title: '' };
-  } catch {
-    return { text: '', url: '', title: '' };
+    return results?.[0]?.result ?? { text: '', url, title: tabInfo.title ?? '' };
+  } catch (err) {
+    return { text: '', url, title: tabInfo.title ?? '', error: err.message };
   }
+}
+
+// Extract context from multiple specific tab IDs (for article compare)
+async function getTabContexts(tabIds = []) {
+  const results = [];
+  for (const tabId of tabIds.slice(0, 3)) {
+    const ctx = await getPageContext({ id: tabId });
+    if (ctx?.text) results.push(ctx);
+  }
+  return { contexts: results };
 }
 
 // ─── Citations ────────────────────────────────────────────────────────────────

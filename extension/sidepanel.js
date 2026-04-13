@@ -36,28 +36,24 @@ async function loadPageContext() {
   statusEl.className = '';
 
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id) throw new Error('No active tab');
+    // Delegate to the background service worker which holds the scripting permission.
+    const context = await msg('GET_PAGE_CONTEXT');
 
-    const results = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => ({
-        text: document.body.innerText,
-        url: location.href,
-        title: document.title,
-      }),
-    });
+    if (context?.error && !context?.text) {
+      throw new Error(context.error);
+    }
+    if (!context?.text) throw new Error('Could not extract page text');
 
-    pageContext = results?.[0]?.result;
-    if (!pageContext?.text) throw new Error('Could not extract text');
-
-    currentDomain = new URL(pageContext.url).hostname;
-    $('page-domain').textContent = currentDomain;
+    pageContext = context;
+    currentDomain = (() => {
+      try { return new URL(pageContext.url).hostname; } catch { return ''; }
+    })();
+    $('page-domain').textContent = currentDomain || pageContext.title || 'Unknown';
 
     statusEl.textContent = '✓ Page context loaded';
     statusEl.className = 'context-ok';
   } catch (err) {
-    statusEl.textContent = '✗ Could not load context';
+    statusEl.textContent = `✗ ${err.message}`;
     statusEl.className = 'context-error';
   }
 }

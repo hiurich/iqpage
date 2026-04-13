@@ -9,6 +9,8 @@
     "identity",
     "tabs",
     "activeTab",
+    "scripting",
+    "downloads",
     "sidePanel",
     "contextMenus"
   ],
@@ -20,8 +22,7 @@
   },
 
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
 
   "action": {
