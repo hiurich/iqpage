@@ -24,7 +24,7 @@ router.post('/', checkUsage('qa'), async (req, res) => {
     ? pageContext.split(/\s+/).slice(0, 6000).join(' ')
     : '';
 
-  const systemPrompt = `You are PageIQ, an intelligent reading assistant. You help users understand web page content.
+  const systemPrompt = `You are IQPage, an intelligent reading assistant. You help users understand web page content.
 
 Current page: ${pageTitle ?? 'unknown'} (${pageUrl ?? 'unknown'})
 

@@ -1,7 +1,7 @@
 {
-  "name": "pageiq-backend",
+  "name": "IQPage-backend",
   "version": "1.0.0",
-  "description": "PageIQ backend - AI-powered page analysis API",
+  "description": "IQPage backend - AI-powered page analysis API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

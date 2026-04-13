@@ -26,7 +26,7 @@ router.post('/', checkUsage('summaries'), async (req, res) => {
     ? `Provide the summary in ${targetLanguage}.`
     : 'Provide the summary in the same language as the article.';
 
-  const systemPrompt = `You are PageIQ, an expert content analyst. Summarize web pages clearly and concisely.
+  const systemPrompt = `You are IQPage, an expert content analyst. Summarize web pages clearly and concisely.
 ${langInstruction}`;
 
   const userPrompt = `Analyze this web page and provide:

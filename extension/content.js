@@ -1,4 +1,4 @@
-// PageIQ — Content Script
+// IQPage — Content Script
 // Injects the highlight mini-menu and handles text selection on the page.
 
 (function () {
@@ -12,15 +12,15 @@
 
   function createMiniMenu() {
     const menu = document.createElement('div');
-    menu.id = 'pageiq-mini-menu';
+    menu.id = 'IQPage-mini-menu';
     menu.innerHTML = `
-      <div class="pageiq-menu-inner">
+      <div class="IQPage-menu-inner">
         <button data-action="explain" title="Explain">💡 Explain</button>
         <button data-action="translate" title="Translate to Spanish">🌐 Translate</button>
         <button data-action="save" title="Save as citation">📌 Save</button>
         <button data-action="note" title="Add note">📝 Note</button>
       </div>
-      <div id="pageiq-menu-result" class="pageiq-result hidden"></div>
+      <div id="IQPage-menu-result" class="IQPage-result hidden"></div>
     `;
     menu.style.cssText = `
       position: absolute;
@@ -37,51 +37,51 @@
     `;
 
     // Inject base styles
-    if (!document.getElementById('pageiq-styles')) {
+    if (!document.getElementById('IQPage-styles')) {
       const style = document.createElement('style');
-      style.id = 'pageiq-styles';
+      style.id = 'IQPage-styles';
       style.textContent = `
-        #pageiq-mini-menu .pageiq-menu-inner {
+        #IQPage-mini-menu .IQPage-menu-inner {
           display: flex; gap: 4px; flex-wrap: wrap;
         }
-        #pageiq-mini-menu button {
+        #IQPage-mini-menu button {
           background: #2d2d44; color: #e2e8f0; border: none;
           border-radius: 6px; padding: 5px 10px; cursor: pointer;
           font-size: 12px; transition: background 0.2s;
           white-space: nowrap;
         }
-        #pageiq-mini-menu button:hover { background: #7c3aed; }
-        #pageiq-mini-menu .pageiq-result {
+        #IQPage-mini-menu button:hover { background: #7c3aed; }
+        #IQPage-mini-menu .IQPage-result {
           margin-top: 8px; padding: 8px; background: #12121f;
           border-radius: 6px; color: #e2e8f0; font-size: 12px;
           line-height: 1.5; max-height: 160px; overflow-y: auto;
           word-break: break-word;
         }
-        #pageiq-mini-menu .pageiq-result.hidden { display: none; }
-        #pageiq-note-overlay {
+        #IQPage-mini-menu .IQPage-result.hidden { display: none; }
+        #IQPage-note-overlay {
           position: fixed; inset: 0; background: rgba(0,0,0,0.6);
           z-index: 2147483646; display: flex;
           align-items: center; justify-content: center;
         }
-        #pageiq-note-overlay .pageiq-note-box {
+        #IQPage-note-overlay .IQPage-note-box {
           background: #1e1e2e; border: 1px solid #7c3aed;
           border-radius: 12px; padding: 20px; width: 360px;
           color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        #pageiq-note-overlay textarea {
+        #IQPage-note-overlay textarea {
           width: 100%; height: 80px; background: #12121f;
           border: 1px solid #4a4a6a; border-radius: 6px; color: #e2e8f0;
           padding: 8px; font-size: 13px; resize: vertical; box-sizing: border-box;
         }
-        #pageiq-note-overlay .note-actions {
+        #IQPage-note-overlay .note-actions {
           display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end;
         }
-        #pageiq-note-overlay button {
+        #IQPage-note-overlay button {
           padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px;
         }
-        #pageiq-note-overlay .btn-save { background: #7c3aed; color: white; }
-        #pageiq-note-overlay .btn-cancel { background: #2d2d44; color: #e2e8f0; }
-        #pageiq-highlight-mark {
+        #IQPage-note-overlay .btn-save { background: #7c3aed; color: white; }
+        #IQPage-note-overlay .btn-cancel { background: #2d2d44; color: #e2e8f0; }
+        #IQPage-highlight-mark {
           background: rgba(124, 58, 237, 0.25);
           border-bottom: 2px solid #7c3aed;
           border-radius: 2px;
@@ -97,7 +97,7 @@
 
   function showMenu(x, y) {
     if (!miniMenu) miniMenu = createMiniMenu();
-    const resultEl = miniMenu.querySelector('#pageiq-menu-result');
+    const resultEl = miniMenu.querySelector('#IQPage-menu-result');
     resultEl.textContent = '';
     resultEl.classList.add('hidden');
 
@@ -112,7 +112,7 @@
 
   function showResult(text) {
     if (!miniMenu) return;
-    const resultEl = miniMenu.querySelector('#pageiq-menu-result');
+    const resultEl = miniMenu.querySelector('#IQPage-menu-result');
     resultEl.textContent = text;
     resultEl.classList.remove('hidden');
   }
@@ -177,28 +177,28 @@
 
   function showNoteOverlay(selectedText) {
     const overlay = document.createElement('div');
-    overlay.id = 'pageiq-note-overlay';
+    overlay.id = 'IQPage-note-overlay';
     overlay.innerHTML = `
-      <div class="pageiq-note-box">
+      <div class="IQPage-note-box">
         <p style="font-size:13px;margin:0 0 8px;color:#a78bfa">Selected text:</p>
         <p style="font-size:12px;color:#94a3b8;margin:0 0 12px;max-height:60px;overflow:auto">"${selectedText.slice(0, 200)}${selectedText.length > 200 ? '…' : ''}"</p>
-        <textarea id="pageiq-note-input" placeholder="Write your note here..."></textarea>
+        <textarea id="IQPage-note-input" placeholder="Write your note here..."></textarea>
         <div style="font-size:12px;color:#64748b;margin-top:6px">
-          <label><input type="checkbox" id="pageiq-expand-note" style="margin-right:4px">Ask AI to expand / question this note</label>
+          <label><input type="checkbox" id="IQPage-expand-note" style="margin-right:4px">Ask AI to expand / question this note</label>
         </div>
         <div class="note-actions">
-          <button class="btn-cancel" id="pageiq-note-cancel">Cancel</button>
-          <button class="btn-save" id="pageiq-note-save">Save Note</button>
+          <button class="btn-cancel" id="IQPage-note-cancel">Cancel</button>
+          <button class="btn-save" id="IQPage-note-save">Save Note</button>
         </div>
       </div>
     `;
     document.body.appendChild(overlay);
 
-    overlay.querySelector('#pageiq-note-cancel').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('#IQPage-note-cancel').addEventListener('click', () => overlay.remove());
 
-    overlay.querySelector('#pageiq-note-save').addEventListener('click', async () => {
-      const note = overlay.querySelector('#pageiq-note-input').value.trim();
-      const expand = overlay.querySelector('#pageiq-expand-note').checked;
+    overlay.querySelector('#IQPage-note-save').addEventListener('click', async () => {
+      const note = overlay.querySelector('#IQPage-note-input').value.trim();
+      const expand = overlay.querySelector('#IQPage-expand-note').checked;
 
       await chrome.runtime.sendMessage({
         type: 'SAVE_CITATION',
@@ -247,12 +247,12 @@
     div.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <strong style="color:#a78bfa">AI Note Expansion</strong>
-        <button id="pageiq-close-exp" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:16px">✕</button>
+        <button id="IQPage-close-exp" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:16px">✕</button>
       </div>
       <p style="color:#94a3b8;font-size:12px;margin:0 0 8px">${aiResponse}</p>
     `;
     document.body.appendChild(div);
-    div.querySelector('#pageiq-close-exp').addEventListener('click', () => div.remove());
+    div.querySelector('#IQPage-close-exp').addEventListener('click', () => div.remove());
     setTimeout(() => div.remove(), 30000);
   }
 

@@ -54,4 +54,4 @@ app.use((err, req, res, _next) => {
 });
 
 const PORT = process.env.PORT ?? 3000;
-app.listen(PORT, () => console.log(`PageIQ backend running on port ${PORT}`));
+app.listen(PORT, () => console.log(`IQPage backend running on port ${PORT}`));

@@ -1,4 +1,4 @@
-// PageIQ — Popup Script
+// IQPage — Popup Script
 
 const STRIPE_PRICES = {
   pro: 'price_pro_placeholder',
@@ -414,25 +414,25 @@ function exportToPDF(content, title) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   doc.setFontSize(16);
-  doc.text('PageIQ — ' + title, 15, 20);
+  doc.text('IQPage — ' + title, 15, 20);
   doc.setFontSize(11);
   doc.text(doc.splitTextToSize(content, 180), 15, 32);
-  doc.save(`pageiq-${Date.now()}.pdf`);
+  doc.save(`IQPage-${Date.now()}.pdf`);
 }
 
 function exportToWord(content, title) {
   const html = `<html><head><meta charset='UTF-8'></head><body>
-    <h2>PageIQ — ${title}</h2>
+    <h2>IQPage — ${title}</h2>
     <pre style="font-family:Arial;font-size:12pt;white-space:pre-wrap">${content}</pre>
   </body></html>`;
   const url = URL.createObjectURL(new Blob([html], { type: 'application/msword' }));
-  chrome.downloads.download({ url, filename: `pageiq-${Date.now()}.doc` });
+  chrome.downloads.download({ url, filename: `IQPage-${Date.now()}.doc` });
 }
 
 function exportToMarkdown(content, title) {
-  const md = `# PageIQ: ${title}\n\n_Generated ${new Date().toLocaleString()}_\n\n---\n\n${content}`;
+  const md = `# IQPage: ${title}\n\n_Generated ${new Date().toLocaleString()}_\n\n---\n\n${content}`;
   const url = URL.createObjectURL(new Blob([md], { type: 'text/plain' }));
-  chrome.downloads.download({ url, filename: `pageiq-${Date.now()}.md` });
+  chrome.downloads.download({ url, filename: `IQPage-${Date.now()}.md` });
 }
 
 const exportPdfBtn = $('btn-export-pdf');

@@ -1,4 +1,4 @@
-// PageIQ — Side Panel Script
+// IQPage — Side Panel Script
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function $(id) { return document.getElementById(id); }
@@ -244,7 +244,7 @@ $('btn-export-citations-md').addEventListener('click', async () => {
   const { citations } = await msg('GET_CITATIONS', { domain: currentDomain });
   if (!citations?.length) return;
 
-  let md = `# PageIQ Citations — ${currentDomain}\n\n_Exported ${new Date().toLocaleString()}_\n\n---\n\n`;
+  let md = `# IQPage Citations — ${currentDomain}\n\n_Exported ${new Date().toLocaleString()}_\n\n---\n\n`;
   citations.forEach((c, i) => {
     md += `## Citation ${i + 1}\n\n> ${c.text}\n\n`;
     if (c.note) md += `**Note:** ${c.note}\n\n`;
@@ -253,7 +253,7 @@ $('btn-export-citations-md').addEventListener('click', async () => {
 
   const blob = new Blob([md], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
-  chrome.downloads.download({ url, filename: `pageiq-citations-${currentDomain}-${Date.now()}.md` });
+  chrome.downloads.download({ url, filename: `IQPage-citations-${currentDomain}-${Date.now()}.md` });
 });
 
 // ─── Offline Mode ─────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
--- PageIQ — Supabase Schema
+-- IQPage — Supabase Schema
 -- Run this in the Supabase SQL Editor
 
 -- ─── Extensions ───────────────────────────────────────────────────────────────

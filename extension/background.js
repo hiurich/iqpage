@@ -1,4 +1,4 @@
-// PageIQ — Background Service Worker (Manifest V3)
+// IQPage — Background Service Worker (Manifest V3)
 
 const BACKEND_URL = 'https://iqpage-production.up.railway.app';
 const SUPABASE_URL = 'https://vwpdzxhwnztcfvyuhxaz.supabase.co';
@@ -18,27 +18,27 @@ chrome.sidePanel
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
-    id: 'pageiq-explain',
-    title: 'PageIQ: Explain selection',
+    id: 'IQPage-explain',
+    title: 'IQPage: Explain selection',
     contexts: ['selection'],
   });
   chrome.contextMenus.create({
-    id: 'pageiq-translate',
-    title: 'PageIQ: Translate to Spanish',
+    id: 'IQPage-translate',
+    title: 'IQPage: Translate to Spanish',
     contexts: ['selection'],
   });
   chrome.contextMenus.create({
-    id: 'pageiq-save-citation',
-    title: 'PageIQ: Save as citation',
+    id: 'IQPage-save-citation',
+    title: 'IQPage: Save as citation',
     contexts: ['selection'],
   });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const actionMap = {
-    'pageiq-explain': 'explain',
-    'pageiq-translate': 'translate',
-    'pageiq-save-citation': 'save',
+    'IQPage-explain': 'explain',
+    'IQPage-translate': 'translate',
+    'IQPage-save-citation': 'save',
   };
   const action = actionMap[info.menuItemId];
   if (!action || !info.selectionText) return;
@@ -220,7 +220,7 @@ async function signIn() {
     return { success: true, user: session.user };
 
   } catch (err) {
-    console.error('[PageIQ] Sign in error:', err);
+    console.error('[IQPage] Sign in error:', err);
     return { success: false, error: err.message };
   }
 }

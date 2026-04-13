@@ -1,11 +1,11 @@
-# PageIQ
+# IQPage
 
 AI-powered Chrome extension for page analysis, Q&A, bias detection, and smart highlights.
 
 ## Project Structure
 
 ```
-PageIQ/
+IQPage/
 ├── extension/              # Chrome Extension (Manifest V3, vanilla JS)
 │   ├── manifest.json
 │   ├── background.js       # Service worker: auth, API calls, caching
