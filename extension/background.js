@@ -6,13 +6,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // ─── Side Panel ──────────────────────────────────────────────────────────────
 
-// Explicitly disable "open side panel on action click" so the popup opens.
-// This setting is PERSISTED by Chrome — removing the old call isn't enough;
-// we must actively set it to false on every SW startup to override any
-// previously stored true value.
 chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: false })
-  .catch(() => {}); // Silently ignore if sidePanel API not available
+  .catch(() => {});
 
 // ─── Context Menu ─────────────────────────────────────────────────────────────
 
@@ -58,7 +54,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   handleMessage(message, sender)
     .then(sendResponse)
     .catch((err) => sendResponse({ error: err.message }));
-  return true; // Keep channel open for async response
+  return true;
 });
 
 async function handleMessage(message, sender) {
@@ -103,17 +99,8 @@ async function handleMessage(message, sender) {
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
-// Web OAuth 2.0 client ID (NOT the Chrome Extension type client).
-// In Google Cloud Console: Credentials → Web application client.
-// Authorized redirect URIs must include: https://<extension-id>.chromiumapp.org/
-// Get your extension ID from chrome://extensions (enable Developer mode).
 const GOOGLE_WEB_CLIENT_ID = '946684141879-3gjnvkjjatv4tte01bta8b13sb5t42bk.apps.googleusercontent.com';
 
-/**
- * Hashes a string with SHA-256 and returns a lowercase hex string.
- * Required by the OIDC implicit flow: Google embeds the hashed nonce in the
- * id_token, and Supabase hashes the raw nonce to verify it matches.
- */
 async function sha256hex(text) {
   const bytes = new TextEncoder().encode(text);
   const buf = await crypto.subtle.digest('SHA-256', bytes);
@@ -122,39 +109,71 @@ async function sha256hex(text) {
     .join('');
 }
 
+/**
+ * Returns a valid JWT, refreshing it automatically if it expires in less than
+ * 5 minutes. This prevents "Invalid or expired token" errors in the side panel.
+ */
 async function getAuthToken() {
-  const { jwt } = await chrome.storage.local.get('jwt');
-  return { jwt: jwt ?? null };
+  const { jwt, refresh_token } = await chrome.storage.local.get(['jwt', 'refresh_token']);
+  if (!jwt) return { jwt: null };
+
+  // Decode JWT payload to check expiration
+  try {
+    const payload = JSON.parse(atob(jwt.split('.')[1]));
+    const expiresAt = payload.exp * 1000; // convert seconds → ms
+    const fiveMinutes = 5 * 60 * 1000;
+
+    // Refresh if token expires in less than 5 minutes
+    if (expiresAt - Date.now() < fiveMinutes && refresh_token) {
+      console.log('[IQPage] JWT expiring soon, refreshing...');
+      const refreshed = await refreshToken(refresh_token);
+      if (refreshed) return { jwt: refreshed };
+    }
+  } catch {
+    // If decode fails, return the existing token and let the server decide
+  }
+
+  return { jwt };
 }
 
 /**
- * Auth flow: launchWebAuthFlow → Google id_token → Supabase signInWithIdToken
- *
- * Why this works (and getAuthToken didn't):
- *   - chrome.identity.getAuthToken() returns an opaque OAUTH2 ACCESS token.
- *     Supabase's grant_type=id_token verifies token signature — it needs a JWT.
- *   - launchWebAuthFlow with response_type=id_token asks Google to return an
- *     actual signed JWT (id_token) in the redirect URL fragment. ✓
- *
- * Google Cloud Console setup (Web application client):
- *   1. Create a new OAuth 2.0 client → type: "Web application"
- *   2. Authorized redirect URIs → add the URL printed by:
- *        chrome.identity.getRedirectURL()  (run in background console)
- *      Format: https://<extension-id>.chromiumapp.org/
- *   3. Copy the Client ID into GOOGLE_WEB_CLIENT_ID above.
- *
- * Supabase dashboard setup:
- *   Authentication → Providers → Google → enable, paste the same Client ID +
- *   Client Secret from the Web application client.
+ * Refreshes the Supabase session using the stored refresh_token.
+ * Returns the new access_token on success, or null on failure.
  */
+async function refreshToken(refresh_token) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ refresh_token }),
+    });
+
+    if (!res.ok) return null;
+
+    const session = await res.json();
+    if (!session.access_token) return null;
+
+    await chrome.storage.local.set({
+      jwt: session.access_token,
+      refresh_token: session.refresh_token,
+      user: session.user,
+    });
+
+    console.log('[IQPage] JWT refreshed successfully');
+    return session.access_token;
+  } catch (err) {
+    console.error('[IQPage] Token refresh failed:', err);
+    return null;
+  }
+}
+
 async function signIn() {
   try {
-    // ── Step 1: Build the Google OIDC authorization URL ─────────────────────
-    const redirectUrl = chrome.identity.getRedirectURL(); // https://<id>.chromiumapp.org/
-
-    // Raw nonce — sent to Supabase so it can verify the id_token's nonce claim.
+    const redirectUrl = chrome.identity.getRedirectURL();
     const rawNonce = crypto.randomUUID();
-    // Hashed nonce — embedded by Google inside the id_token.
     const hashedNonce = await sha256hex(rawNonce);
 
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -162,10 +181,9 @@ async function signIn() {
     authUrl.searchParams.set('response_type', 'id_token');
     authUrl.searchParams.set('redirect_uri', redirectUrl);
     authUrl.searchParams.set('scope', 'openid email profile');
-    authUrl.searchParams.set('nonce', hashedNonce);   // hashed nonce → Google embeds in JWT
-    authUrl.searchParams.set('prompt', 'select_account'); // always show account picker
+    authUrl.searchParams.set('nonce', hashedNonce);
+    authUrl.searchParams.set('prompt', 'select_account');
 
-    // ── Step 2: Open Google's sign-in page via Chrome Identity ──────────────
     const responseUrl = await new Promise((resolve, reject) => {
       chrome.identity.launchWebAuthFlow(
         { url: authUrl.toString(), interactive: true },
@@ -181,8 +199,6 @@ async function signIn() {
       );
     });
 
-    // ── Step 3: Extract id_token from the redirect URL fragment (#) ─────────
-    // Google returns tokens in the hash, not the query string.
     const fragment = new URLSearchParams(new URL(responseUrl).hash.slice(1));
     const idToken = fragment.get('id_token');
     if (!idToken) {
@@ -190,7 +206,6 @@ async function signIn() {
       throw new Error(`Google did not return an id_token: ${errDesc}`);
     }
 
-    // ── Step 4: Exchange id_token with Supabase ──────────────────────────────
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=id_token`, {
       method: 'POST',
       headers: {
@@ -200,7 +215,7 @@ async function signIn() {
       body: JSON.stringify({
         provider: 'google',
         id_token: idToken,
-        nonce: rawNonce, // raw nonce — Supabase hashes this and checks against JWT claim
+        nonce: rawNonce,
       }),
     });
 
@@ -210,7 +225,6 @@ async function signIn() {
       throw new Error(`Supabase auth failed: ${detail}`);
     }
 
-    // ── Step 5: Persist the Supabase session ────────────────────────────────
     await chrome.storage.local.set({
       jwt: session.access_token,
       refresh_token: session.refresh_token,
@@ -226,7 +240,6 @@ async function signIn() {
 }
 
 async function signOut() {
-  // Best-effort: notify Supabase to invalidate the server-side session.
   try {
     const { jwt } = await chrome.storage.local.get('jwt');
     if (jwt) {
@@ -248,22 +261,41 @@ async function getUser() {
 
 // ─── API Calls ────────────────────────────────────────────────────────────────
 
+/**
+ * Makes an authenticated request to the backend.
+ * Automatically refreshes the JWT if expired before retrying once.
+ */
 async function apiRequest(endpoint, method = 'POST', body = null) {
-  const { jwt } = await chrome.storage.local.get('jwt');
+  let { jwt } = await getAuthToken();
   if (!jwt) throw new Error('Not authenticated');
 
-  const options = {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwt}`,
-    },
+  const makeRequest = async (token) => {
+    const options = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    if (body && method !== 'GET') options.body = JSON.stringify(body);
+    return fetch(`${BACKEND_URL}${endpoint}`, options);
   };
-  if (body && method !== 'GET') options.body = JSON.stringify(body);
 
-  const res = await fetch(`${BACKEND_URL}${endpoint}`, options);
+  let res = await makeRequest(jwt);
+
+  // If 401, try refreshing the token once and retry
+  if (res.status === 401) {
+    console.log('[IQPage] Got 401, attempting token refresh...');
+    const { refresh_token } = await chrome.storage.local.get('refresh_token');
+    if (refresh_token) {
+      const newJwt = await refreshToken(refresh_token);
+      if (newJwt) {
+        res = await makeRequest(newJwt);
+      }
+    }
+  }
+
   const data = await res.json();
-
   if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
   return data;
 }
@@ -271,8 +303,6 @@ async function apiRequest(endpoint, method = 'POST', body = null) {
 // ─── Page Context ─────────────────────────────────────────────────────────────
 
 async function getPageContext(senderTab) {
-  // Prefer the tab that sent the message; fall back to the active tab in the
-  // focused window (needed when the call comes from popup or side panel).
   let tabId = senderTab?.id;
 
   if (!tabId) {
@@ -282,7 +312,6 @@ async function getPageContext(senderTab) {
 
   if (!tabId) return { text: '', url: '', title: '', error: 'No active tab found' };
 
-  // chrome:// and edge:// pages cannot be scripted — bail out early.
   let tabInfo;
   try {
     tabInfo = await chrome.tabs.get(tabId);
@@ -300,7 +329,6 @@ async function getPageContext(senderTab) {
     const results = await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
-        // Prefer article / main content; fall back to full body text.
         const article = document.querySelector('article, main, [role="main"]');
         const text = (article ?? document.body).innerText ?? '';
         return {
@@ -316,7 +344,6 @@ async function getPageContext(senderTab) {
   }
 }
 
-// Extract context from multiple specific tab IDs (for article compare)
 async function getTabContexts(tabIds = []) {
   const results = [];
   for (const tabId of tabIds.slice(0, 3)) {
@@ -352,7 +379,6 @@ async function getCachedSummaries() {
 
 async function cacheSummary(data) {
   const { cached_summaries = [] } = await chrome.storage.local.get('cached_summaries');
-  // Keep last 5 summaries
   const updated = [{ ...data, cachedAt: Date.now() }, ...cached_summaries].slice(0, 5);
   await chrome.storage.local.set({ cached_summaries: updated });
   return { success: true };
