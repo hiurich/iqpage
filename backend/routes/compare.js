@@ -1,12 +1,14 @@
 const express = require('express');
 const Anthropic = require('@anthropic-ai/sdk');
-const { requirePlan } = require('../middleware/usageCheck');
+const { requirePlan, checkUsage } = require('../middleware/usageCheck');
 const { checkAndUpdateCost } = require('../utils/costTracker');
 
 const router = express.Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-router.post('/', requirePlan('power'), async (req, res) => {
+const COMPARE_MODEL = 'claude-sonnet-4-5'; // Power-only; must match costTracker keys
+
+router.post('/', requirePlan('power'), checkUsage('qa'), async (req, res) => {
   const { articles } = req.body; // array of { text, url, title }
 
   if (!Array.isArray(articles) || articles.length < 2 || articles.length > 3) {
@@ -16,7 +18,7 @@ router.post('/', requirePlan('power'), async (req, res) => {
   const { id: userId, profile } = req.user;
 
   const articleSections = articles.map((a, i) => {
-    const truncated = (a.text ?? '').split(/\s+/).slice(0, 2500).join(' ');
+    const truncated = (typeof a.text === 'string' ? a.text : '').split(/\s+/).slice(0, 2500).join(' ');
     return `### Article ${i + 1}: ${a.title ?? `Article ${i + 1}`}\nURL: ${a.url ?? 'N/A'}\n\n${truncated}`;
   });
 
@@ -33,7 +35,7 @@ ${articleSections.join('\n\n---\n\n')}`;
 
   try {
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20251001', // Always use Sonnet for comparison (Power only)
+      model: COMPARE_MODEL,
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
     });
@@ -41,7 +43,10 @@ ${articleSections.join('\n\n---\n\n')}`;
     const comparison = response.content[0].text;
     const { input_tokens, output_tokens } = response.usage;
 
-    await checkAndUpdateCost(userId, profile.plan, 'claude-sonnet-4-5-20251001', input_tokens, output_tokens);
+    const costResult = await checkAndUpdateCost(userId, profile.plan, COMPARE_MODEL, input_tokens, output_tokens);
+    if (!costResult.allowed) {
+      return res.status(429).json({ error: 'Daily API cost limit reached.' });
+    }
 
     res.json({ comparison });
   } catch (err) {

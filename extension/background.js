@@ -2,6 +2,12 @@
 
 const BACKEND_URL = 'https://iqpage-production.up.railway.app';
 const SUPABASE_URL = 'https://vwpdzxhwnztcfvyuhxaz.supabase.co';
+
+// SUPABASE_ANON_KEY is intentionally hardcoded and safe to include in extension
+// source. It is a *public* key designed to be embedded in client-side code.
+// Security is enforced by Supabase Row-Level Security (RLS) policies on every
+// table — the anon key alone grants no privileged access. The service_role key
+// (which bypasses RLS) lives only in backend environment variables, never here.
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3cGR6eGh3bnp0Y2Z2eXVoeGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjkyNzksImV4cCI6MjA5MTYwNTI3OX0.GX-EKJUH0-5PL5bkX7zA_0ldeWTN7XZiFWsBxRDv5MY';
 
 // ─── Side Panel ──────────────────────────────────────────────────────────────
