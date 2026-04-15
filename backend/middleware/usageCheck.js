@@ -2,8 +2,8 @@ const supabase = require('../utils/supabase');
 
 const PLAN_LIMITS = {
   free: {
-    summaries_per_period: 5,        // per week
-    qa_per_period: 10,
+    summaries_per_period: 3,        // per week
+    qa_per_period: 5,
     highlights_per_period: 5,
   },
   edu: {
@@ -48,11 +48,24 @@ function checkUsage(type) {
       });
     }
 
-    // Increment counter
-    await supabase
+    // Atomic conditional increment: only succeeds if the counter is still under
+    // the limit at write time, closing the TOCTOU window for concurrent requests.
+    const { data: updated, error: updateError } = await supabase
       .from('profiles')
       .update({ [field]: used + 1 })
-      .eq('id', req.user.id);
+      .eq('id', req.user.id)
+      .lt(field, limit)   // condition: abort if another request already pushed us over
+      .select(field)
+      .single();
+
+    if (updateError || !updated) {
+      return res.status(429).json({
+        error: 'Usage limit reached',
+        type,
+        limit,
+        plan,
+      });
+    }
 
     next();
   };
