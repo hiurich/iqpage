@@ -16,15 +16,15 @@ router.get('/', async (req, res) => {
     plan,
     usage: {
       summaries: {
-        used: profile.summaries_used_this_period ?? 0,
+        used: profile.summaries_used ?? 0,
         limit: limits.summaries_per_period,
       },
       qa: {
-        used: profile.qa_used_this_period ?? 0,
+        used: profile.qa_used ?? 0,
         limit: limits.qa_per_period,
       },
       highlights: {
-        used: profile.highlights_used_this_period ?? 0,
+        used: profile.highlights_used ?? 0,
         limit: limits.highlights_per_period,
       },
     },

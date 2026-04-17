@@ -17,11 +17,9 @@ async function authMiddleware(req, res, next) {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 
-  // select('*') used until column names are confirmed against the real schema.
-  // Narrow this once the profiles table columns are verified.
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, email, plan, stripe_customer_id, subscription_end, summaries_used, qa_used, highlights_used, daily_api_cost, last_reset_date')
     .eq('id', user.id)
     .single();
 

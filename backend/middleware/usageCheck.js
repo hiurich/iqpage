@@ -8,18 +8,18 @@ const PLAN_LIMITS = {
   },
   edu: {
     summaries_per_period: 80,       // per month
-    qa_per_period: 500,
-    highlights_per_period: Infinity,
+    qa_per_period: 999,
+    highlights_per_period: 999,
   },
   pro: {
     summaries_per_period: 100,      // per month
     qa_per_period: 500,
-    highlights_per_period: Infinity,
+    highlights_per_period: 999,
   },
   power: {
     summaries_per_period: 500,      // per month
     qa_per_period: 2000,
-    highlights_per_period: Infinity,
+    highlights_per_period: 999,
   },
 };
 
@@ -33,7 +33,7 @@ function checkUsage(type) {
     const plan = profile.plan ?? 'free';
     const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
 
-    const field = `${type}_used_this_period`;
+    const field = `${type}_used`;          // real column: summaries_used / qa_used / highlights_used
     const limitField = `${type}_per_period`;
     const used = profile[field] ?? 0;
     const limit = limits[limitField];
@@ -54,7 +54,7 @@ function checkUsage(type) {
       .from('profiles')
       .update({ [field]: used + 1 })
       .eq('id', req.user.id)
-      .lt(field, limit)   // condition: abort if another request already pushed us over
+      .lt(field, limit)   // atomic: aborts if a concurrent request already hit the limit
       .select(field)
       .single();
 
