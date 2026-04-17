@@ -17,20 +17,11 @@ async function authMiddleware(req, res, next) {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 
-  // Fetch only the columns consumed by middleware and route handlers.
-  // Avoid select('*') to minimize data exposure in logs and memory.
+  // select('*') used until column names are confirmed against the real schema.
+  // Narrow this once the profiles table columns are verified.
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select([
-      'plan',
-      'stripe_customer_id',
-      'daily_api_cost',
-      'last_reset_date',
-      'subscription_end',
-      'summaries_used_this_period',
-      'qa_used_this_period',
-      'highlights_used_this_period',
-    ].join(', '))
+    .select('*')
     .eq('id', user.id)
     .single();
 
