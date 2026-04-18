@@ -2,6 +2,10 @@ const express = require('express');
 const Anthropic = require('@anthropic-ai/sdk');
 const { checkUsage } = require('../middleware/usageCheck');
 const { selectModel } = require('../utils/modelSelector');
+const { checkAndUpdateCost } = require('../utils/costTracker');
+
+const MAX_SELECTED_TEXT = 5000; // ~1 250 tokens — prevents token-bombing
+const MAX_USER_NOTE = 500;
 
 const router = express.Router();
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -20,6 +24,14 @@ router.post('/', checkUsage('highlights'), async (req, res) => {
 
   if (!selectedText?.trim()) {
     return res.status(400).json({ error: 'selectedText is required' });
+  }
+
+  if (selectedText.length > MAX_SELECTED_TEXT) {
+    return res.status(400).json({ error: `selectedText exceeds ${MAX_SELECTED_TEXT} character limit` });
+  }
+
+  if (userNote && userNote.length > MAX_USER_NOTE) {
+    return res.status(400).json({ error: `userNote exceeds ${MAX_USER_NOTE} character limit` });
   }
 
   const validActions = ['explain', 'translate', 'save', 'expand_note'];
@@ -55,6 +67,13 @@ router.post('/', checkUsage('highlights'), async (req, res) => {
       max_tokens: 512,
       messages: [{ role: 'user', content: userPrompt }],
     });
+
+    const { input_tokens, output_tokens } = response.usage;
+    const { id: userId } = req.user;
+    const costResult = await checkAndUpdateCost(userId, profile.plan, model, input_tokens, output_tokens);
+    if (!costResult.allowed) {
+      return res.status(429).json({ error: 'Daily API cost limit reached.' });
+    }
 
     res.json({ result: response.content[0].text, model });
   } catch (err) {

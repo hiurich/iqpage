@@ -5,6 +5,26 @@ const supabase = require('../utils/supabase');
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+/**
+ * Allowlist of URL origins permitted as Stripe redirect targets.
+ * Prevents open-redirect and SSRF via attacker-controlled successUrl/cancelUrl.
+ */
+function buildAllowedOrigins() {
+  const origins = new Set();
+  if (process.env.FRONTEND_URL) origins.add(new URL(process.env.FRONTEND_URL).origin);
+  if (process.env.EXTENSION_ID) origins.add(`chrome-extension://${process.env.EXTENSION_ID}`);
+  return origins;
+}
+
+function validateRedirectUrl(url, fallback) {
+  if (!url) return fallback;
+  try {
+    const { origin } = new URL(url);
+    if (buildAllowedOrigins().has(origin)) return url;
+  } catch {}
+  return fallback;
+}
+
 const PRICE_TO_PLAN = {
   [process.env.STRIPE_PRICE_PRO]: 'pro',
   [process.env.STRIPE_PRICE_EDU]: 'edu',
@@ -40,8 +60,8 @@ router.post('/create-checkout-session', async (req, res) => {
       customer: customerId,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl ?? `${process.env.FRONTEND_URL}/success`,
-      cancel_url: cancelUrl ?? `${process.env.FRONTEND_URL}/cancel`,
+      success_url: validateRedirectUrl(successUrl, `${process.env.FRONTEND_URL}/success`),
+      cancel_url: validateRedirectUrl(cancelUrl, `${process.env.FRONTEND_URL}/cancel`),
       metadata: { supabase_user_id: req.user.id, plan: PRICE_TO_PLAN[priceId] },
     });
 
