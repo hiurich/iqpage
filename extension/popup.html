@@ -160,11 +160,6 @@
     <div class="ob-arrow"></div>
   </div>
 
-  <!-- DEV ONLY: remove before production release -->
-  <div style="position:fixed;bottom:4px;left:0;right:0;text-align:center;z-index:1001;">
-    <span id="dev-reset-ob" style="font-size:10px;color:rgba(255,255,255,0.2);cursor:pointer;text-decoration:underline;">Reset onboarding (dev)</span>
-  </div>
-  <!-- /DEV ONLY -->
 
   <!-- ── LOADING VIEW (shown immediately, hidden once init resolves) ── -->
   <div id="view-loading" class="view view-center">
@@ -312,5 +307,16 @@
 
   <script src="lib/jspdf.min.js"></script>
   <script src="popup.js"></script>
+
+  <!-- DEV ONLY -->
+  <button id="dev-reset" style="width:100%;background:none;border:none;padding:8px;cursor:pointer;font-size:11px;color:#A78BFA;text-align:center;">Reset onboarding (dev)</button>
+  <script>
+  document.getElementById('dev-reset').addEventListener('click', function() {
+    chrome.storage.local.remove(['onboarding_complete', 'onboarding_step'], function() {
+      location.reload();
+    });
+  });
+  </script>
+  <!-- /DEV ONLY -->
 </body>
 </html>
