@@ -353,9 +353,13 @@ async function initOnboarding() {
 
   const { onboarding_complete, onboarding_step } = data;
 
-  if (onboarding_complete) return;
+  // DEV ONLY — remove before launch
+  const forceOnboarding = true;
+  // /DEV ONLY
 
-  const step = onboarding_step ?? 1;
+  if (!forceOnboarding && onboarding_complete) return;
+
+  const step = forceOnboarding ? 1 : (onboarding_step ?? 1);
 
   if (step === 1) {
     // Phase 1: welcome overlay
