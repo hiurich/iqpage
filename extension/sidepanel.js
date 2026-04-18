@@ -65,7 +65,15 @@ function appendMessage(role, content) {
   const container = $('chat-messages');
   const div = document.createElement('div');
   div.className = `message ${role}`;
-  div.textContent = content;
+
+  if (role === 'assistant' && typeof marked !== 'undefined') {
+    // Render markdown for AI responses (summaries, chat replies, history detail).
+    // User and error messages stay as textContent to prevent injection.
+    div.innerHTML = marked.parse(content);
+  } else {
+    div.textContent = content;
+  }
+
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
   return div;
