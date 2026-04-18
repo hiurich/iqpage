@@ -398,3 +398,11 @@ async function init() {
 }
 
 init();
+
+// DEV ONLY — remove before production release
+document.getElementById('dev-reset-ob')?.addEventListener('click', () => {
+  chrome.storage.local.remove(['onboarding_complete', 'onboarding_step'], () => {
+    location.reload();
+  });
+});
+// /DEV ONLY
