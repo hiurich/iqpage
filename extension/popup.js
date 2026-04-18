@@ -466,6 +466,84 @@ if (openChatBtn) {
   });
 }
 
+// ─── Onboarding ───────────────────────────────────────────────────────────────
+
+function positionTooltip(tooltipEl, targetEl) {
+  const tr = targetEl.getBoundingClientRect();
+  const tw = tooltipEl.offsetWidth;
+  const th = tooltipEl.offsetHeight;
+  const margin = 8;
+  let left = tr.left + tr.width / 2 - tw / 2;
+  left = Math.max(margin, Math.min(left, window.innerWidth - tw - margin));
+  tooltipEl.style.left = `${left}px`;
+  tooltipEl.style.top  = `${tr.top - th - 10}px`;
+}
+
+function showOnboardingTooltip(step) {
+  if (step === 2) {
+    const tooltip = $('ob-tooltip-2');
+    show(tooltip);
+    requestAnimationFrame(() => positionTooltip(tooltip, $('btn-summarize')));
+  } else if (step === 3) {
+    const tooltip = $('ob-tooltip-3');
+    show(tooltip);
+    requestAnimationFrame(() => positionTooltip(tooltip, $('btn-open-chat')));
+  }
+}
+
+async function initOnboarding() {
+  const data = await chrome.storage.local.get(['onboarding_complete', 'onboarding_step']);
+  console.log('[IQPage] onboarding check:', data);
+
+  const { onboarding_complete, onboarding_step } = data;
+
+  // DEV ONLY — remove before launch
+  const forceOnboarding = true;
+  // /DEV ONLY
+
+  if (!forceOnboarding && onboarding_complete) return;
+
+  const step = forceOnboarding ? 1 : (onboarding_step ?? 1);
+
+  if (step === 1) {
+    show($('ob-welcome'));
+    $('ob-start-btn')?.addEventListener('click', async () => {
+      await chrome.storage.local.set({ onboarding_step: 2 });
+      hide($('ob-welcome'));
+      showOnboardingTooltip(2);
+    }, { once: true });
+  } else {
+    showOnboardingTooltip(step);
+  }
+}
+
+// Advance onboarding when user clicks Summarize (step 2 → 3)
+$('btn-summarize')?.addEventListener('click', async () => {
+  const { onboarding_step } = await chrome.storage.local.get('onboarding_step');
+  if (onboarding_step === 2) {
+    hide($('ob-tooltip-2'));
+    await chrome.storage.local.set({ onboarding_step: 3 });
+    showOnboardingTooltip(3);
+  }
+}, true); // capture=true so it runs before other listeners
+
+// Advance onboarding when user clicks Q&A Chat (step 3 → complete)
+$('btn-open-chat')?.addEventListener('click', async () => {
+  const { onboarding_step } = await chrome.storage.local.get('onboarding_step');
+  if (onboarding_step === 3) {
+    hide($('ob-tooltip-3'));
+    chrome.storage.local.set({ onboarding_complete: true });
+  }
+}, true);
+
+// DEV ONLY — remove before production release
+$('dev-reset-ob')?.addEventListener('click', () => {
+  chrome.storage.local.remove(['onboarding_complete', 'onboarding_step'], () => {
+    location.reload();
+  });
+});
+// /DEV ONLY
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 // Run init after DOM is fully parsed (script is at bottom of body, so it is).
-init();
+init().then(() => initOnboarding());
