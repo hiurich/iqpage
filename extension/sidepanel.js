@@ -66,12 +66,12 @@ function appendMessage(role, content) {
   const div = document.createElement('div');
   div.className = `message ${role}`;
 
-  if (role === 'assistant' && typeof marked !== 'undefined') {
+  if (role === 'assistant' && typeof marked !== 'undefined' && content) {
     // Render markdown for AI responses (summaries, chat replies, history detail).
     // User and error messages stay as textContent to prevent injection.
     div.innerHTML = marked.parse(content);
   } else {
-    div.textContent = content;
+    div.textContent = content || '';
   }
 
   container.appendChild(div);
@@ -353,13 +353,9 @@ async function initOnboarding() {
 
   const { onboarding_complete, onboarding_step } = data;
 
-  // DEV ONLY — remove before launch
-  const forceOnboarding = true;
-  // /DEV ONLY
+  if (onboarding_complete) return;
 
-  if (!forceOnboarding && onboarding_complete) return;
-
-  const step = forceOnboarding ? 1 : (onboarding_step ?? 1);
+  const step = onboarding_step ?? 1;
 
   if (step === 1) {
     // Phase 1: welcome overlay

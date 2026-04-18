@@ -491,47 +491,51 @@ function showOnboardingTooltip(step) {
   }
 }
 
+// Tracks current onboarding step in memory so click handlers can check
+// it synchronously without an async storage read that races with the event.
+let obCurrentStep = 0;
+
 async function initOnboarding() {
   const data = await chrome.storage.local.get(['onboarding_complete', 'onboarding_step']);
   console.log('[IQPage] onboarding check:', data);
 
-  const { onboarding_complete, onboarding_step } = data;
+  if (data.onboarding_complete) return;
 
-  // DEV ONLY — remove before launch
-  const forceOnboarding = true;
-  // /DEV ONLY
+  obCurrentStep = data.onboarding_step ?? 1;
 
-  if (!forceOnboarding && onboarding_complete) return;
-
-  const step = forceOnboarding ? 1 : (onboarding_step ?? 1);
-
-  if (step === 1) {
+  if (obCurrentStep === 1) {
     show($('ob-welcome'));
     $('ob-start-btn')?.addEventListener('click', async () => {
+      obCurrentStep = 2;
       await chrome.storage.local.set({ onboarding_step: 2 });
       hide($('ob-welcome'));
       showOnboardingTooltip(2);
     }, { once: true });
   } else {
-    showOnboardingTooltip(step);
+    showOnboardingTooltip(obCurrentStep);
   }
 }
 
-// Advance onboarding when user clicks Summarize (step 2 → 3)
-$('btn-summarize')?.addEventListener('click', async () => {
-  const { onboarding_step } = await chrome.storage.local.get('onboarding_step');
-  if (onboarding_step === 2) {
+// Advance onboarding when user clicks Summarize (step 2 → 3).
+// Synchronous check against obCurrentStep avoids async race with the event.
+$('btn-summarize')?.addEventListener('click', (e) => {
+  if (obCurrentStep === 2) {
     hide($('ob-tooltip-2'));
-    await chrome.storage.local.set({ onboarding_step: 3 });
+    obCurrentStep = 3;
+    chrome.storage.local.set({ onboarding_step: 3 });
     showOnboardingTooltip(3);
   }
-}, true); // capture=true so it runs before other listeners
+}, true);
 
-// Advance onboarding when user clicks Q&A Chat (step 3 → complete)
-$('btn-open-chat')?.addEventListener('click', async () => {
-  const { onboarding_step } = await chrome.storage.local.get('onboarding_step');
-  if (onboarding_step === 3) {
+// Advance onboarding when user clicks Q&A Chat (step 3 → complete).
+// Also blocks the panel-open action during onboarding so the tooltip
+// stays visible before the popup closes.
+$('btn-open-chat')?.addEventListener('click', (e) => {
+  if (obCurrentStep === 3) {
+    // Block the existing listener from opening the sidepanel immediately —
+    // let the user see the tooltip first. Mark complete and let it proceed.
     hide($('ob-tooltip-3'));
+    obCurrentStep = 0;
     chrome.storage.local.set({ onboarding_complete: true });
   }
 }, true);
