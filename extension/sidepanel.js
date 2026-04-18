@@ -348,8 +348,10 @@ function showOnboardingTooltip(step) {
  * then wires the Phase 1 "Get started" button if needed.
  */
 async function initOnboarding() {
-  const { onboarding_complete, onboarding_step } =
-    await chrome.storage.local.get(['onboarding_complete', 'onboarding_step']);
+  const data = await chrome.storage.local.get(['onboarding_complete', 'onboarding_step']);
+  console.log('[IQPage] onboarding check:', data);
+
+  const { onboarding_complete, onboarding_step } = data;
 
   if (onboarding_complete) return;
 
@@ -379,6 +381,10 @@ function setPlanBadge(plan) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
+  // Onboarding runs first so the welcome overlay appears immediately,
+  // before any async network calls that might delay rendering.
+  await initOnboarding();
+
   // Load plan
   try {
     const data = await msg('API_REQUEST', { endpoint: '/api/me', method: 'GET' });
@@ -392,9 +398,6 @@ async function init() {
   if (!navigator.onLine) {
     show($('offline-banner'));
   }
-
-  // Start onboarding flow (no-op if already complete)
-  await initOnboarding();
 }
 
 init();
