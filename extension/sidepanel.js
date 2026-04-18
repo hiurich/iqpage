@@ -349,13 +349,11 @@ function showOnboardingTooltip(step) {
  */
 async function initOnboarding() {
   const data = await chrome.storage.local.get(['onboarding_complete', 'onboarding_step']);
-  console.log('[IQPage] onboarding check:', data);
+  console.log('onboarding step:', data.onboarding_step, 'complete:', data.onboarding_complete);
 
-  const { onboarding_complete, onboarding_step } = data;
+  if (data.onboarding_complete) return;
 
-  if (onboarding_complete) return;
-
-  const step = onboarding_step ?? 1;
+  const step = data.onboarding_step ?? 1;
 
   if (step === 1) {
     // Phase 1: welcome overlay
@@ -364,11 +362,37 @@ async function initOnboarding() {
       await chrome.storage.local.set({ onboarding_step: 2 });
       hide($('ob-welcome'));
       showOnboardingTooltip(2);
+      attachSendAdvance();
     }, { once: true });
-  } else {
-    // Re-entering with step already advanced (e.g. panel reopened mid-flow)
-    showOnboardingTooltip(step);
+  } else if (step === 2) {
+    showOnboardingTooltip(2);
+    attachSendAdvance();
+  } else if (step === 3) {
+    showOnboardingTooltip(3);
+    attachSendComplete();
   }
+}
+
+function attachSendAdvance() {
+  const btnSend = $('btn-send');
+  if (!btnSend) return;
+  btnSend.addEventListener('click', function advance2() {
+    btnSend.removeEventListener('click', advance2, true);
+    hide($('ob-tooltip-2'));
+    chrome.storage.local.set({ onboarding_step: 3 });
+    showOnboardingTooltip(3);
+    attachSendComplete();
+  }, { capture: true, once: true });
+}
+
+function attachSendComplete() {
+  const btnSend = $('btn-send');
+  if (!btnSend) return;
+  btnSend.addEventListener('click', function advance3() {
+    btnSend.removeEventListener('click', advance3, true);
+    hide($('ob-tooltip-3'));
+    chrome.storage.local.set({ onboarding_complete: true });
+  }, { capture: true, once: true });
 }
 
 // ─── Plan Badge ───────────────────────────────────────────────────────────────
