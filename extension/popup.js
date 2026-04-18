@@ -417,7 +417,9 @@ function exportToPDF(content, title) {
   doc.text('IQPage — ' + title, 15, 20);
   doc.setFontSize(11);
   doc.text(doc.splitTextToSize(content, 180), 15, 32);
-  doc.save(`IQPage-${Date.now()}.pdf`);
+  const pageTitle = title || document.title || 'summary';
+  const safeName = pageTitle.replace(/[^a-z0-9]/gi, '-').substring(0, 50);
+  doc.save(`IQPage-${safeName}.pdf`);
 }
 
 function exportToWord(content, title) {
