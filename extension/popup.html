@@ -307,16 +307,5 @@
 
   <script src="lib/jspdf.min.js"></script>
   <script src="popup.js"></script>
-
-  <!-- DEV ONLY -->
-  <button id="dev-reset" style="width:100%;background:none;border:none;padding:8px;cursor:pointer;font-size:11px;color:#A78BFA;text-align:center;">Reset onboarding (dev)</button>
-  <script>
-  document.getElementById('dev-reset').addEventListener('click', function() {
-    chrome.storage.local.remove(['onboarding_complete', 'onboarding_step'], function() {
-      location.reload();
-    });
-  });
-  </script>
-  <!-- /DEV ONLY -->
 </body>
 </html>

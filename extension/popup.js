@@ -541,11 +541,16 @@ $('btn-open-chat')?.addEventListener('click', (e) => {
 }, true);
 
 // DEV ONLY — remove before production release
-$('dev-reset-ob')?.addEventListener('click', () => {
+// DEV ONLY
+const devReset = document.createElement('div');
+devReset.textContent = 'Reset onboarding (dev)';
+devReset.style.cssText = 'text-align:center;padding:8px;cursor:pointer;font-size:11px;color:#A78BFA;';
+devReset.addEventListener('click', () => {
   chrome.storage.local.remove(['onboarding_complete', 'onboarding_step'], () => {
     location.reload();
   });
 });
+document.body.appendChild(devReset);
 // /DEV ONLY
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
