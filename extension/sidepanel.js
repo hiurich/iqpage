@@ -105,15 +105,6 @@ async function sendMessage(text) {
   appendMessage('user', text);
   chatHistory.push({ role: 'user', content: text });
 
-  // Snapshot onboarding step before the async API call so we can act on it
-  // once the response arrives, regardless of any concurrent storage writes.
-  const { onboarding_step: obStep } = await chrome.storage.local.get('onboarding_step');
-  if (obStep === 2) hide($('ob-tooltip-2'));
-  if (obStep === 3) {
-    hide($('ob-tooltip-3'));
-    chrome.storage.local.set({ onboarding_complete: true });
-  }
-
   // Offline check
   if (!navigator.onLine) {
     removeTyping();
@@ -142,12 +133,6 @@ async function sendMessage(text) {
     removeTyping();
     appendMessage('assistant', data.reply);
     chatHistory.push({ role: 'assistant', content: data.reply });
-
-    // Advance onboarding: step 2 → 3 after first AI response is visible
-    if (obStep === 2) {
-      await chrome.storage.local.set({ onboarding_step: 3 });
-      showOnboardingTooltip(3);
-    }
   } catch (err) {
     removeTyping();
     const errMsg = `Error: ${err.message}`;
