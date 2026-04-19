@@ -410,15 +410,3 @@ async function init() {
 }
 
 init();
-
-// DEV ONLY — remove before production release
-const devReset = document.createElement('div');
-devReset.textContent = 'Reset onboarding (dev)';
-devReset.style.cssText = 'text-align:center;padding:8px;cursor:pointer;font-size:11px;color:#A78BFA;';
-devReset.addEventListener('click', () => {
-  chrome.storage.local.remove(['onboarding_complete', 'onboarding_step'], () => {
-    location.reload();
-  });
-});
-document.body.appendChild(devReset);
-// /DEV ONLY
