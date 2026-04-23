@@ -363,14 +363,37 @@ if (compareBtn) {
     }
     setLoading('Gathering open tabs…');
     try {
-      const tabs = await chrome.tabs.query({ currentWindow: true });
-      const tabIds = tabs.slice(0, 3).map((t) => t.id);
-      const { contexts } = await sendMsg('GET_TAB_CONTEXTS', { tabIds });
-      if ((contexts ?? []).length < 2) {
+      // FIX: La tab activa siempre es la primera.
+      // Las otras tabs excluyen chrome://, extensiones y tabs sin URL válida.
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      const otherTabs = (await chrome.tabs.query({ currentWindow: true }))
+        .filter((t) =>
+          t.id !== activeTab?.id &&
+          t.url &&
+          !t.url.startsWith('chrome') &&
+          !t.url.startsWith('chrome-extension') &&
+          !t.url.startsWith('about')
+        )
+        .slice(-2); // máximo 2 tabs adicionales (las más recientes)
+
+      const selectedTabs = [activeTab, ...otherTabs].filter(Boolean);
+
+      if (selectedTabs.length < 2) {
         clearLoading();
-        showError('Open at least 2 tabs with readable content to compare.');
+        showError('Open at least 2 tabs with readable web content to compare.');
         return;
       }
+
+      const tabIds = selectedTabs.map((t) => t.id);
+      const { contexts } = await sendMsg('GET_TAB_CONTEXTS', { tabIds });
+
+      if ((contexts ?? []).length < 2) {
+        clearLoading();
+        showError('Could not extract content from at least 2 tabs. Make sure the tabs have readable articles.');
+        return;
+      }
+
       const data = await sendMsg('API_REQUEST', {
         endpoint: '/api/compare', method: 'POST', body: { articles: contexts },
       });
@@ -517,7 +540,6 @@ async function initOnboarding() {
 }
 
 // Advance onboarding when user clicks Summarize (step 2 → 3).
-// Synchronous check against obCurrentStep avoids async race with the event.
 $('btn-summarize')?.addEventListener('click', (e) => {
   if (obCurrentStep === 2) {
     hide($('ob-tooltip-2'));
@@ -528,12 +550,8 @@ $('btn-summarize')?.addEventListener('click', (e) => {
 }, true);
 
 // Advance onboarding when user clicks Q&A Chat (step 3 → complete).
-// Also blocks the panel-open action during onboarding so the tooltip
-// stays visible before the popup closes.
 $('btn-open-chat')?.addEventListener('click', (e) => {
   if (obCurrentStep === 3) {
-    // Block the existing listener from opening the sidepanel immediately —
-    // let the user see the tooltip first. Mark complete and let it proceed.
     hide($('ob-tooltip-3'));
     obCurrentStep = 0;
     chrome.storage.local.set({ onboarding_complete: true });
@@ -541,5 +559,4 @@ $('btn-open-chat')?.addEventListener('click', (e) => {
 }, true);
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
-// Run init after DOM is fully parsed (script is at bottom of body, so it is).
 init().then(() => initOnboarding());
