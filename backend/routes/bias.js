@@ -54,10 +54,24 @@ Return ONLY the JSON object, no other text.`;
 
     let analysis;
     try {
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : { raw: rawText };
-    } catch {
-      analysis = { raw: rawText };
+      // FIX: limpiar markdown code fences que Claude a veces agrega
+      const cleaned = rawText
+        .replace(/^```json\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/```\s*$/i, '')
+        .trim();
+
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        analysis = JSON.parse(jsonMatch[0]);
+      } else {
+        // Si no hay JSON, devolver error claro
+        console.error('Bias: no JSON found in response:', rawText);
+        return res.status(500).json({ error: 'Could not parse bias analysis response' });
+      }
+    } catch (parseErr) {
+      console.error('Bias JSON parse error:', parseErr, 'Raw:', rawText);
+      return res.status(500).json({ error: 'Could not parse bias analysis response' });
     }
 
     res.json({ analysis, model });
