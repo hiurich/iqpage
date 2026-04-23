@@ -323,7 +323,14 @@ if (biasBtn) {
         body: { pageText: ctx.text, pageUrl: ctx.url },
       });
       clearLoading();
-      const a = data.analysis;
+
+      // FIX: protección si el backend devuelve formato inesperado
+      const a = data?.analysis ?? data ?? {};
+      if (!a || typeof a !== 'object') {
+        showError('Bias analysis returned an unexpected response. Please try again.');
+        return;
+      }
+
       showResult('Bias Analysis', [
         `Political lean: ${a.political_lean ?? 'N/A'} (${a.political_lean_score ?? '?'}/100)`,
         `Commercial bias: ${a.commercial_bias ?? 'N/A'} — ${a.commercial_bias_explanation ?? ''}`,
@@ -379,7 +386,6 @@ async function openCompareModal() {
     return;
   }
 
-  // Pre-seleccionar la tab activa
   if (activeTab?.id) compareSelectedIds.add(activeTab.id);
 
   const listEl = $('compare-tab-list');
