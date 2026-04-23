@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — IQPage</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0614;
+      color: #e2e8f0;
+      line-height: 1.7;
+    }
+
+    header {
+      background: rgba(10, 6, 20, 0.95);
+      border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      background: #7C3AED;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .logo-name a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    .page-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .page-meta {
+      font-size: 14px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 48px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #a78bfa;
+      margin: 40px 0 12px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #c4b5fd;
+      margin: 24px 0 8px;
+    }
+
+    p {
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 14px;
+    }
+
+    ul, ol {
+      color: rgba(255,255,255,0.75);
+      padding-left: 24px;
+      margin-bottom: 14px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    strong {
+      color: rgba(255,255,255,0.95);
+    }
+
+    a {
+      color: #a78bfa;
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 14px;
+    }
+
+    th {
+      background: rgba(124, 58, 237, 0.2);
+      color: #c4b5fd;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid rgba(124, 58, 237, 0.25);
+    }
+
+    td {
+      padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.75);
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .highlight-box {
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+
+    .highlight-box ul {
+      margin-bottom: 0;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin: 40px 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.3);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    footer a { color: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">IQ</div>
+    <div class="logo-name"><a href="/">IQPage</a></div>
+  </header>
+
+  <div class="container">
+    <div class="page-title">Privacy Policy</div>
+    <div class="page-meta">Last updated: April 14, 2026</div>
+
+    <h2>1. Introduction</h2>
+    <p>IQPage ("we", "our", or "us") is a Chrome browser extension that uses artificial intelligence to help users summarize, analyze, and interact with webpage content. This Privacy Policy explains what data we collect, how we use it, and your rights as a user.</p>
+
+    <h2>2. Data We Collect</h2>
+
+    <h3>2.1 Account Information</h3>
+    <p>When you sign in with Google, we receive your:</p>
+    <ul>
+      <li>Email address</li>
+      <li>Full name</li>
+      <li>Google profile picture URL</li>
+    </ul>
+    <p>This information is stored securely in our database (Supabase) and used solely to manage your account and subscription plan.</p>
+
+    <h3>2.2 Page Content</h3>
+    <p>When you explicitly trigger a feature (Summarize, Chat, Explain, Translate, Bias Check, Compare), the text content of the current webpage is sent to our secure backend server to generate an AI response.</p>
+
+    <div class="highlight-box">
+      <strong>We do not:</strong>
+      <ul>
+        <li>Store page content permanently</li>
+        <li>Track your browsing history</li>
+        <li>Collect page content passively or without your action</li>
+      </ul>
+    </div>
+
+    <h3>2.3 Usage Data</h3>
+    <p>We track how many summaries and Q&A requests you make per billing period to enforce plan limits. This data is stored in your user profile.</p>
+
+    <h3>2.4 Citations and Notes</h3>
+    <p>Citations and notes you save are stored locally in your browser using Chrome's storage API. They are not uploaded to our servers.</p>
+
+    <h3>2.5 Cached Summaries</h3>
+    <p>Your last 5 summaries are cached locally in your browser for offline access. This data never leaves your device.</p>
+
+    <h2>3. How We Use Your Data</h2>
+    <table>
+      <tr>
+        <th>Data</th>
+        <th>Purpose</th>
+      </tr>
+      <tr>
+        <td>Email &amp; name</td>
+        <td>Account management, login</td>
+      </tr>
+      <tr>
+        <td>Page content</td>
+        <td>Generate AI summaries and responses</td>
+      </tr>
+      <tr>
+        <td>Usage counts</td>
+        <td>Enforce plan limits</td>
+      </tr>
+      <tr>
+        <td>Payment info</td>
+        <td>Processed by Stripe (we never see your card details)</td>
+      </tr>
+    </table>
+
+    <h2>4. Third-Party Services</h2>
+    <p>IQPage uses the following third-party services:</p>
+    <ul>
+      <li><strong>Anthropic (Claude AI)</strong> — processes page content to generate AI responses. See <a href="https://www.anthropic.com/privacy" target="_blank">Anthropic's Privacy Policy</a>.</li>
+      <li><strong>Supabase</strong> — stores user accounts and usage data. See <a href="https://supabase.com/privacy" target="_blank">Supabase's Privacy Policy</a>.</li>
+      <li><strong>Stripe</strong> — processes payments securely. See <a href="https://stripe.com/privacy" target="_blank">Stripe's Privacy Policy</a>.</li>
+      <li><strong>Google OAuth</strong> — handles authentication. See <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</li>
+    </ul>
+
+    <h2>5. Data Retention</h2>
+    <ul>
+      <li>Account data is retained while your account is active.</li>
+      <li>If you delete your account, all your data is permanently deleted within 30 days.</li>
+      <li>Page content sent for AI processing is not retained after the response is generated.</li>
+    </ul>
+
+    <h2>6. Data Security</h2>
+    <p>All data transmitted between the extension and our servers uses HTTPS encryption. Our backend is hosted on Railway with industry-standard security practices. We never sell your data to third parties.</p>
+
+    <h2>7. Children's Privacy</h2>
+    <p>IQPage is not directed at children under 13. We do not knowingly collect personal information from children under 13.</p>
+
+    <h2>8. Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li>Access the data we hold about you</li>
+      <li>Request deletion of your account and data</li>
+      <li>Opt out of any future communications</li>
+    </ul>
+    <p>To exercise these rights, contact us at: <strong>info@iqpage.app</strong></p>
+
+    <h2>9. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify users of significant changes by updating the "Last updated" date at the top of this page.</p>
+
+    <h2>10. Contact</h2>
+    <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+    <p><strong>Email:</strong> <a href="mailto:info@iqpage.app">info@iqpage.app</a><br>
+    <strong>Website:</strong> <a href="https://iqpage.app">https://iqpage.app</a></p>
+  </div>
+
+  <footer>
+    &copy; 2026 Innovation HH LLC &nbsp;·&nbsp;
+    <a href="/privacy">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="/terms">Terms of Service</a> &nbsp;·&nbsp;
+    <a href="/">iqpage.app</a>
+  </footer>
+
+</body>
+</html>
