@@ -121,6 +121,156 @@
       70%  { box-shadow: 0 0 0 10px rgba(124,58,237,0);   }
       100% { box-shadow: 0 0 0 0    rgba(124,58,237,0);   }
     }
+
+    /* ── Compare Modal ── */
+    .compare-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 6, 25, 0.92);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .compare-modal-overlay.hidden { display: none; }
+
+    .compare-modal {
+      background: #1a0f3c;
+      border: 1px solid rgba(124, 58, 237, 0.4);
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      max-width: 300px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+
+    .compare-modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .compare-modal-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 14px;
+    }
+
+    .compare-tab-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+
+    .compare-tab-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .compare-tab-item:hover {
+      background: rgba(124,58,237,0.12);
+      border-color: rgba(124,58,237,0.4);
+    }
+    .compare-tab-item.selected {
+      background: rgba(124,58,237,0.2);
+      border-color: #7C3AED;
+    }
+    .compare-tab-item.active-tab {
+      border-color: rgba(124,58,237,0.5);
+    }
+
+    .compare-tab-checkbox {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      accent-color: #7C3AED;
+      cursor: pointer;
+    }
+
+    .compare-tab-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .compare-tab-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .compare-tab-domain {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 1px;
+    }
+
+    .compare-tab-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: #7C3AED;
+      background: rgba(124,58,237,0.15);
+      border-radius: 4px;
+      padding: 2px 5px;
+      white-space: nowrap;
+    }
+
+    .compare-modal-hint {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .compare-modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-compare-cancel {
+      flex: 1;
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 9px;
+      padding: 9px 0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-compare-cancel:hover { background: rgba(255,255,255,0.12); }
+
+    .btn-compare-run {
+      flex: 2;
+      background: #7C3AED;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      padding: 9px 0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-compare-run:hover { background: #6d28d9; }
+    .btn-compare-run:disabled {
+      background: rgba(124,58,237,0.3);
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -160,20 +310,34 @@
     <div class="ob-arrow"></div>
   </div>
 
+  <!-- ── COMPARE MODAL ── -->
+  <div id="compare-modal-overlay" class="compare-modal-overlay hidden">
+    <div class="compare-modal">
+      <div class="compare-modal-title">🔀 Compare Articles</div>
+      <div class="compare-modal-sub">Select 2 or 3 tabs to compare</div>
+      <div id="compare-tab-list" class="compare-tab-list">
+        <!-- Tabs injected by JS -->
+      </div>
+      <div class="compare-modal-hint" id="compare-modal-hint">Select at least 2 tabs</div>
+      <div class="compare-modal-actions">
+        <button class="btn-compare-cancel" id="btn-compare-cancel">Cancel</button>
+        <button class="btn-compare-run" id="btn-compare-run" disabled>Compare Selected</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- ── LOADING VIEW (shown immediately, hidden once init resolves) ── -->
+  <!-- ── LOADING VIEW ── -->
   <div id="view-loading" class="view view-center">
     <div class="logo">IQ</div>
     <div class="boot-spinner"></div>
   </div>
 
-  <!-- ── AUTH VIEW (not authenticated) ── -->
+  <!-- ── AUTH VIEW ── -->
   <div id="view-auth" class="view hidden">
     <div class="auth-card">
       <div class="logo">IQ</div>
       <h1>IQPage</h1>
       <p class="tagline">AI-powered page analysis</p>
-
       <button id="btn-signin" class="btn-google">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -183,19 +347,16 @@
         </svg>
         Sign in with Google
       </button>
-
       <div id="auth-status" class="auth-status hidden"></div>
-
       <p class="auth-fine-print">
         Sign in to start summarizing pages,<br>asking questions, and saving highlights.
       </p>
     </div>
   </div>
 
-  <!-- ── MAIN VIEW (authenticated) ── -->
+  <!-- ── MAIN VIEW ── -->
   <div id="view-main" class="view hidden">
 
-    <!-- Header -->
     <div class="popup-header">
       <div class="header-left">
         <div class="logo-sm">IQ</div>
@@ -208,20 +369,17 @@
       </div>
     </div>
 
-    <!-- Dropdown menu -->
     <div id="dropdown-menu" class="dropdown hidden">
       <a href="#" id="menu-upgrade">⚡ Upgrade Plan</a>
       <a href="#" id="menu-history">🕒 View History</a>
       <a href="#" id="menu-signout">Sign Out</a>
     </div>
 
-    <!-- Current page info -->
     <div class="page-info">
       <div class="page-domain" id="page-domain">—</div>
       <div class="page-title" id="page-title"></div>
     </div>
 
-    <!-- Action Buttons -->
     <div class="actions-grid">
       <button id="btn-summarize" class="action-btn" title="Summarize this page">
         <span class="action-icon">📄</span>
@@ -243,7 +401,6 @@
       </button>
     </div>
 
-    <!-- Quick Niche Prompts -->
     <div class="section-label">Quick Prompts</div>
     <div class="niche-buttons">
       <button class="niche-btn" data-prompt="legal_analysis">⚖️ Legal</button>
@@ -253,7 +410,6 @@
       <button class="niche-btn" data-prompt="scientific_analysis">🔬 Science</button>
     </div>
 
-    <!-- Language selector -->
     <div class="lang-row">
       <label for="target-lang">Summary language:</label>
       <select id="target-lang">
@@ -268,7 +424,6 @@
       </select>
     </div>
 
-    <!-- Usage meters -->
     <div class="usage-section">
       <div class="usage-row">
         <span>Summaries</span>
@@ -282,7 +437,6 @@
       </div>
     </div>
 
-    <!-- Result area -->
     <div id="result-area" class="result-area hidden">
       <div class="result-header">
         <span id="result-label">Summary</span>
@@ -297,7 +451,6 @@
       <div id="reading-questions" class="reading-questions hidden"></div>
     </div>
 
-    <!-- Loading overlay (over main content, not full-screen) -->
     <div id="loading-overlay" class="loading-overlay hidden">
       <div class="spinner"></div>
       <p id="loading-text">Analyzing page...</p>

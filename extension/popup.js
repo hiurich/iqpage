@@ -13,7 +13,6 @@ function show(el) { if (el) el.classList.remove('hidden'); }
 function hide(el) { if (el) el.classList.add('hidden'); }
 
 // ─── View router ──────────────────────────────────────────────────────────────
-// Switches between the three top-level views: 'loading' | 'auth' | 'main'
 
 function showView(name) {
   ['loading', 'auth', 'main'].forEach((v) => {
@@ -23,14 +22,12 @@ function showView(name) {
 }
 
 // ─── Background messaging ─────────────────────────────────────────────────────
-// Wakes the service worker if needed and sends a message.
 
 function sendMsg(type, data = {}) {
   return new Promise((resolve, reject) => {
     try {
       chrome.runtime.sendMessage({ type, ...data }, (response) => {
         if (chrome.runtime.lastError) {
-          // SW was dormant and couldn't respond — retry once after a short delay
           setTimeout(() => {
             try {
               chrome.runtime.sendMessage({ type, ...data }, (resp2) => {
@@ -114,14 +111,12 @@ function setAuthStatus(msg, isError = false) {
   show(el);
 }
 
-// ─── Init: reads storage directly — no SW needed ─────────────────────────────
+// ─── Init ─────────────────────────────────────────────────────────────────────
 
 async function init() {
-  // Always start at loading view so the popup is never blank.
   showView('loading');
 
   try {
-    // Read JWT directly from storage — this never needs the service worker.
     const stored = await chrome.storage.local.get(['jwt', 'user']);
     const hasToken = Boolean(stored.jwt);
 
@@ -130,10 +125,8 @@ async function init() {
       return;
     }
 
-    // We have a token — show main UI immediately.
     showView('main');
 
-    // Load current tab info (synchronous enough, no SW needed).
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab?.url && !tab.url.startsWith('chrome://')) {
@@ -142,7 +135,6 @@ async function init() {
       }
     } catch {}
 
-    // Fetch plan & usage from backend in the background — non-blocking.
     sendMsg('API_REQUEST', { endpoint: '/api/me', method: 'GET' })
       .then((data) => {
         if (!data || data.error) return;
@@ -153,12 +145,9 @@ async function init() {
           updateUsageMeter('qa', data.usage.qa.used, data.usage.qa.limit);
         }
       })
-      .catch(() => {
-        // Non-fatal — user still sees the UI, just without plan info.
-      });
+      .catch(() => {});
 
   } catch (err) {
-    // Catastrophic storage failure — fall back to auth view.
     console.error('Init error:', err);
     showView('auth');
   }
@@ -175,7 +164,6 @@ if (signinBtn) {
 
     try {
       const result = await sendMsg('SIGN_IN');
-
       if (result?.success) {
         await init();
       } else {
@@ -221,7 +209,6 @@ if (signoutLink) {
   signoutLink.addEventListener('click', async (e) => {
     e.preventDefault();
     await sendMsg('SIGN_OUT').catch(() => {});
-    // Clear storage directly as backup in case SW is down.
     await chrome.storage.local.remove(['jwt', 'refresh_token', 'user']).catch(() => {});
     location.reload();
   });
@@ -300,14 +287,12 @@ if (summarizeBtn) {
       clearLoading();
       showResult('Summary', data.summary);
 
-      // Cache offline
       try {
         await sendMsg('CACHE_SUMMARY', {
           data: { url: ctx.url, title: ctx.title, domain: new URL(ctx.url).hostname, summary: data.summary },
         });
       } catch {}
 
-      // Reading questions
       if (data.readingQuestions?.length) {
         const qEl = $('reading-questions');
         if (qEl) {
@@ -352,7 +337,94 @@ if (biasBtn) {
   });
 }
 
-// ─── Compare tabs (Power) ─────────────────────────────────────────────────────
+// ─── Compare tabs (Power) — Modal con selección manual ───────────────────────
+
+let compareSelectedIds = new Set();
+let compareAllTabs = [];
+
+function updateCompareButton() {
+  const runBtn = $('btn-compare-run');
+  const hint = $('compare-modal-hint');
+  const count = compareSelectedIds.size;
+
+  if (count < 2) {
+    runBtn.disabled = true;
+    hint.textContent = `Select at least 2 tabs (${count} selected)`;
+  } else if (count > 3) {
+    runBtn.disabled = true;
+    hint.textContent = 'Maximum 3 tabs allowed';
+  } else {
+    runBtn.disabled = false;
+    hint.textContent = `${count} tabs selected — ready to compare`;
+  }
+}
+
+async function openCompareModal() {
+  compareSelectedIds = new Set();
+  compareAllTabs = [];
+
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  const allTabs = await chrome.tabs.query({ currentWindow: true });
+  compareAllTabs = allTabs.filter((t) =>
+    t.url &&
+    !t.url.startsWith('chrome') &&
+    !t.url.startsWith('chrome-extension') &&
+    !t.url.startsWith('about') &&
+    t.title
+  );
+
+  if (compareAllTabs.length < 2) {
+    showError('Open at least 2 tabs with readable articles to compare.');
+    return;
+  }
+
+  // Pre-seleccionar la tab activa
+  if (activeTab?.id) compareSelectedIds.add(activeTab.id);
+
+  const listEl = $('compare-tab-list');
+  listEl.innerHTML = '';
+
+  compareAllTabs.forEach((tab) => {
+    const isActive = tab.id === activeTab?.id;
+    const isSelected = compareSelectedIds.has(tab.id);
+
+    let domain = '';
+    try { domain = new URL(tab.url).hostname; } catch {}
+
+    const item = document.createElement('div');
+    item.className = `compare-tab-item${isSelected ? ' selected' : ''}${isActive ? ' active-tab' : ''}`;
+    item.dataset.tabId = tab.id;
+
+    item.innerHTML = `
+      <input type="checkbox" class="compare-tab-checkbox" ${isSelected ? 'checked' : ''} />
+      <div class="compare-tab-info">
+        <div class="compare-tab-title" title="${escapeHtml(tab.title)}">${escapeHtml(tab.title)}</div>
+        <div class="compare-tab-domain">${escapeHtml(domain)}</div>
+      </div>
+      ${isActive ? '<span class="compare-tab-badge">Current</span>' : ''}
+    `;
+
+    item.addEventListener('click', (e) => {
+      const checkbox = item.querySelector('.compare-tab-checkbox');
+      if (e.target !== checkbox) checkbox.checked = !checkbox.checked;
+
+      if (checkbox.checked) {
+        compareSelectedIds.add(tab.id);
+        item.classList.add('selected');
+      } else {
+        compareSelectedIds.delete(tab.id);
+        item.classList.remove('selected');
+      }
+      updateCompareButton();
+    });
+
+    listEl.appendChild(item);
+  });
+
+  updateCompareButton();
+  show($('compare-modal-overlay'));
+}
 
 const compareBtn = $('btn-compare');
 if (compareBtn) {
@@ -361,47 +433,43 @@ if (compareBtn) {
       showResult('Power Plan Required', 'Article comparison requires the Power plan.');
       return;
     }
-    setLoading('Gathering open tabs…');
-    try {
-      // FIX: La tab activa siempre es la primera.
-      // Las otras tabs excluyen chrome://, extensiones y tabs sin URL válida.
-      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-      const otherTabs = (await chrome.tabs.query({ currentWindow: true }))
-        .filter((t) =>
-          t.id !== activeTab?.id &&
-          t.url &&
-          !t.url.startsWith('chrome') &&
-          !t.url.startsWith('chrome-extension') &&
-          !t.url.startsWith('about')
-        )
-        .slice(-2); // máximo 2 tabs adicionales (las más recientes)
-
-      const selectedTabs = [activeTab, ...otherTabs].filter(Boolean);
-
-      if (selectedTabs.length < 2) {
-        clearLoading();
-        showError('Open at least 2 tabs with readable web content to compare.');
-        return;
-      }
-
-      const tabIds = selectedTabs.map((t) => t.id);
-      const { contexts } = await sendMsg('GET_TAB_CONTEXTS', { tabIds });
-
-      if ((contexts ?? []).length < 2) {
-        clearLoading();
-        showError('Could not extract content from at least 2 tabs. Make sure the tabs have readable articles.');
-        return;
-      }
-
-      const data = await sendMsg('API_REQUEST', {
-        endpoint: '/api/compare', method: 'POST', body: { articles: contexts },
-      });
-      clearLoading();
-      showResult('Article Comparison', data.comparison);
-    } catch (err) { clearLoading(); showError(err.message); }
+    await openCompareModal();
   });
 }
+
+$('btn-compare-cancel')?.addEventListener('click', () => {
+  hide($('compare-modal-overlay'));
+});
+
+$('btn-compare-run')?.addEventListener('click', async () => {
+  hide($('compare-modal-overlay'));
+
+  const selectedIds = [...compareSelectedIds];
+  if (selectedIds.length < 2) {
+    showError('Select at least 2 tabs to compare.');
+    return;
+  }
+
+  setLoading('Comparing articles…');
+  try {
+    const { contexts } = await sendMsg('GET_TAB_CONTEXTS', { tabIds: selectedIds });
+
+    if ((contexts ?? []).length < 2) {
+      clearLoading();
+      showError('Could not extract content from the selected tabs. Make sure they have readable articles.');
+      return;
+    }
+
+    const data = await sendMsg('API_REQUEST', {
+      endpoint: '/api/compare', method: 'POST', body: { articles: contexts },
+    });
+    clearLoading();
+    showResult('Article Comparison', data.comparison);
+  } catch (err) {
+    clearLoading();
+    showError(err.message);
+  }
+});
 
 // ─── Niche prompts ────────────────────────────────────────────────────────────
 
@@ -489,6 +557,17 @@ if (openChatBtn) {
   });
 }
 
+// ─── Utility ─────────────────────────────────────────────────────────────────
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 // ─── Onboarding ───────────────────────────────────────────────────────────────
 
 function positionTooltip(tooltipEl, targetEl) {
@@ -514,14 +593,10 @@ function showOnboardingTooltip(step) {
   }
 }
 
-// Tracks current onboarding step in memory so click handlers can check
-// it synchronously without an async storage read that races with the event.
 let obCurrentStep = 0;
 
 async function initOnboarding() {
   const data = await chrome.storage.local.get(['onboarding_complete', 'onboarding_step']);
-  console.log('[IQPage] onboarding check:', data);
-
   if (data.onboarding_complete) return;
 
   obCurrentStep = data.onboarding_step ?? 1;
@@ -539,7 +614,6 @@ async function initOnboarding() {
   }
 }
 
-// Advance onboarding when user clicks Summarize (step 2 → 3).
 $('btn-summarize')?.addEventListener('click', (e) => {
   if (obCurrentStep === 2) {
     hide($('ob-tooltip-2'));
@@ -549,7 +623,6 @@ $('btn-summarize')?.addEventListener('click', (e) => {
   }
 }, true);
 
-// Advance onboarding when user clicks Q&A Chat (step 3 → complete).
 $('btn-open-chat')?.addEventListener('click', (e) => {
   if (obCurrentStep === 3) {
     hide($('ob-tooltip-3'));
