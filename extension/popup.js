@@ -6,6 +6,31 @@ const STRIPE_PRICES = {
   power: 'price_power_placeholder',
 };
 
+// ─── PostHog Analytics ────────────────────────────────────────────────────────
+
+const POSTHOG_KEY = 'phc_yGPVDEMQhr9K8im4LU3BktmuTCoXBs5imJtfUBVtoa5j';
+const POSTHOG_HOST = 'https://us.i.posthog.com';
+
+function phCapture(event, properties = {}) {
+  try {
+    const distinctId = chrome.runtime.id ?? 'extension-user';
+    fetch(`${POSTHOG_HOST}/capture/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: POSTHOG_KEY,
+        event,
+        distinct_id: distinctId,
+        properties: {
+          ...properties,
+          extension_version: chrome.runtime.getManifest().version,
+          $lib: 'iqpage-extension',
+        },
+      }),
+    }).catch(() => {});
+  } catch {}
+}
+
 // ─── DOM helpers ──────────────────────────────────────────────────────────────
 
 function $(id) { return document.getElementById(id); }
@@ -126,6 +151,7 @@ async function init() {
     }
 
     showView('main');
+    phCapture('popup_opened');
 
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -165,6 +191,7 @@ if (signinBtn) {
     try {
       const result = await sendMsg('SIGN_IN');
       if (result?.success) {
+        phCapture('user_signed_in');
         await init();
       } else {
         const errText = result?.error ?? 'Sign-in failed. Please try again.';
@@ -208,6 +235,7 @@ const signoutLink = $('menu-signout');
 if (signoutLink) {
   signoutLink.addEventListener('click', async (e) => {
     e.preventDefault();
+    phCapture('user_signed_out');
     await sendMsg('SIGN_OUT').catch(() => {});
     await chrome.storage.local.remove(['jwt', 'refresh_token', 'user']).catch(() => {});
     location.reload();
@@ -230,6 +258,7 @@ if (upgradeLink) {
   upgradeLink.addEventListener('click', async (e) => {
     e.preventDefault();
     hide(dropdownMenu);
+    phCapture('upgrade_clicked');
     try {
       const { url } = await sendMsg('API_REQUEST', {
         endpoint: '/api/create-checkout-session',
@@ -286,6 +315,7 @@ if (summarizeBtn) {
       });
       clearLoading();
       showResult('Summary', data.summary);
+      phCapture('summary_generated', { url: ctx.url, language: targetLanguage ?? 'default' });
 
       try {
         await sendMsg('CACHE_SUMMARY', {
@@ -312,6 +342,7 @@ if (biasBtn) {
   biasBtn.addEventListener('click', async () => {
     if (currentPlan === 'free') {
       showResult('Upgrade Required', 'Bias detection requires a Pro or higher plan.');
+      phCapture('upgrade_wall_hit', { feature: 'bias_detection' });
       return;
     }
     setLoading('Detecting bias…');
@@ -324,7 +355,6 @@ if (biasBtn) {
       });
       clearLoading();
 
-      // FIX: protección si el backend devuelve formato inesperado
       const a = data?.analysis ?? data ?? {};
       if (!a || typeof a !== 'object') {
         showError('Bias analysis returned an unexpected response. Please try again.');
@@ -340,6 +370,7 @@ if (biasBtn) {
         ...(a.key_bias_indicators ?? []).map((i) => `  • ${i}`),
         '', a.overall_summary ?? '',
       ].join('\n'));
+      phCapture('bias_detected', { url: ctx.url });
     } catch (err) { clearLoading(); showError(err.message); }
   });
 }
@@ -437,6 +468,7 @@ if (compareBtn) {
   compareBtn.addEventListener('click', async () => {
     if (currentPlan !== 'power') {
       showResult('Power Plan Required', 'Article comparison requires the Power plan.');
+      phCapture('upgrade_wall_hit', { feature: 'compare' });
       return;
     }
     await openCompareModal();
@@ -471,6 +503,7 @@ $('btn-compare-run')?.addEventListener('click', async () => {
     });
     clearLoading();
     showResult('Article Comparison', data.comparison);
+    phCapture('compare_completed', { tab_count: selectedIds.length });
   } catch (err) {
     clearLoading();
     showError(err.message);
@@ -500,6 +533,7 @@ document.querySelectorAll('.niche-btn').forEach((btn) => {
       });
       clearLoading();
       showResult(NICHE_LABELS[promptType], data.result);
+      phCapture('niche_prompt_used', { prompt_type: promptType });
     } catch (err) { clearLoading(); showError(err.message); }
   });
 });
@@ -537,18 +571,21 @@ function exportToMarkdown(content, title) {
 const exportPdfBtn = $('btn-export-pdf');
 if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => {
   if (currentPlan === 'free') { showError('Export requires Pro or higher.'); return; }
+  phCapture('export_used', { format: 'pdf' });
   exportToPDF($('result-content')?.textContent ?? '', $('result-label')?.textContent ?? '');
 });
 
 const exportWordBtn = $('btn-export-word');
 if (exportWordBtn) exportWordBtn.addEventListener('click', () => {
   if (currentPlan === 'free') { showError('Export requires Pro or higher.'); return; }
+  phCapture('export_used', { format: 'word' });
   exportToWord($('result-content')?.textContent ?? '', $('result-label')?.textContent ?? '');
 });
 
 const exportMdBtn = $('btn-export-md');
 if (exportMdBtn) exportMdBtn.addEventListener('click', () => {
   if (currentPlan !== 'power') { showError('Markdown export requires Power plan.'); return; }
+  phCapture('export_used', { format: 'markdown' });
   exportToMarkdown($('result-content')?.textContent ?? '', $('result-label')?.textContent ?? '');
 });
 
@@ -557,6 +594,7 @@ if (exportMdBtn) exportMdBtn.addEventListener('click', () => {
 const openChatBtn = $('btn-open-chat');
 if (openChatBtn) {
   openChatBtn.addEventListener('click', async () => {
+    phCapture('chat_opened');
     const win = await chrome.windows.getCurrent();
     chrome.sidePanel.open({ windowId: win.id });
     window.close();
@@ -614,6 +652,7 @@ async function initOnboarding() {
       await chrome.storage.local.set({ onboarding_step: 2 });
       hide($('ob-welcome'));
       showOnboardingTooltip(2);
+      phCapture('onboarding_started');
     }, { once: true });
   } else {
     showOnboardingTooltip(obCurrentStep);
@@ -634,6 +673,7 @@ $('btn-open-chat')?.addEventListener('click', (e) => {
     hide($('ob-tooltip-3'));
     obCurrentStep = 0;
     chrome.storage.local.set({ onboarding_complete: true });
+    phCapture('onboarding_completed');
   }
 }, true);
 
