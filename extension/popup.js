@@ -1,9 +1,9 @@
-// IQPage — Popup Script
+// IQPage — Popup Script v1.0.3
 
 const STRIPE_PRICES = {
-  pro: 'price_pro_placeholder',
-  edu: 'price_edu_placeholder',
-  power: 'price_power_placeholder',
+  pro: 'price_1TT34fC3ogU3v09mSAkq2FFl',
+  edu: 'price_1TT2zRC3ogU3v09mjpEOYELT',
+  power: 'price_1TT36YC3ogU3v09mLH6T0MX0',
 };
 
 // ─── PostHog Analytics ────────────────────────────────────────────────────────
@@ -111,6 +111,16 @@ function setPlanBadge(plan) {
   const classMap = { pro: 'pro', edu: 'edu', power: 'power' };
   badge.textContent = plan.toUpperCase();
   badge.className = `badge ${classMap[plan] ?? ''}`;
+
+  // Hide upgrade button for paid plans
+  const upgradeBtn = $('btn-upgrade-header');
+  if (upgradeBtn) {
+    if (plan !== 'free') {
+      upgradeBtn.classList.add('hide-for-paid');
+    } else {
+      upgradeBtn.classList.remove('hide-for-paid');
+    }
+  }
 }
 
 function enforcePlanFeatures(plan) {
@@ -134,6 +144,36 @@ function setAuthStatus(msg, isError = false) {
   el.textContent = msg;
   el.className = `auth-status ${isError ? 'auth-error' : 'auth-info'}`;
   show(el);
+}
+
+// ─── Checkout helper ──────────────────────────────────────────────────────────
+
+async function openCheckout(priceId) {
+  phCapture('upgrade_clicked');
+  try {
+    const response = await sendMsg('API_REQUEST', {
+      endpoint: '/api/create-checkout-session',
+      method: 'POST',
+      body: {
+        priceId,
+        successUrl: chrome.runtime.getURL('popup.html') + '?upgraded=1',
+        cancelUrl: chrome.runtime.getURL('popup.html'),
+      },
+    });
+
+    // FIX: handle both { url } and direct string response
+    const checkoutUrl = response?.url ?? response?.checkoutUrl ?? response;
+
+    if (!checkoutUrl || typeof checkoutUrl !== 'string' || !checkoutUrl.startsWith('http')) {
+      console.error('Checkout response:', response);
+      showError('Could not create checkout session. Please try again.');
+      return;
+    }
+
+    chrome.tabs.create({ url: checkoutUrl });
+  } catch (err) {
+    showError(`Upgrade error: ${err.message}`);
+  }
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -231,6 +271,15 @@ if (menuBtn && dropdownMenu) {
   document.addEventListener('click', () => hide(dropdownMenu));
 }
 
+// Upgrade button — visible in header for free users
+const upgradeHeaderBtn = $('btn-upgrade-header');
+if (upgradeHeaderBtn) {
+  upgradeHeaderBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await openCheckout(STRIPE_PRICES.pro);
+  });
+}
+
 const signoutLink = $('menu-signout');
 if (signoutLink) {
   signoutLink.addEventListener('click', async (e) => {
@@ -250,27 +299,6 @@ if (historyLink) {
     const win = await chrome.windows.getCurrent();
     chrome.sidePanel.open({ windowId: win.id });
     window.close();
-  });
-}
-
-const upgradeLink = $('menu-upgrade');
-if (upgradeLink) {
-  upgradeLink.addEventListener('click', async (e) => {
-    e.preventDefault();
-    hide(dropdownMenu);
-    phCapture('upgrade_clicked');
-    try {
-      const { url } = await sendMsg('API_REQUEST', {
-        endpoint: '/api/create-checkout-session',
-        method: 'POST',
-        body: {
-          priceId: STRIPE_PRICES.pro,
-          successUrl: chrome.runtime.getURL('popup.html') + '?upgraded=1',
-          cancelUrl: chrome.runtime.getURL('popup.html'),
-        },
-      });
-      chrome.tabs.create({ url });
-    } catch (err) { showError(`Upgrade error: ${err.message}`); }
   });
 }
 
