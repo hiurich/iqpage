@@ -55,9 +55,23 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:fl
 .blob1{width:600px;height:600px;background:var(--violet);top:-100px;left:-200px}
 .blob2{width:400px;height:400px;background:var(--accent);bottom:-50px;right:-100px}
 .blob3{width:300px;height:300px;background:#4fc3f7;top:50%;left:60%}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:100px;padding:6px 16px;font-size:13px;color:var(--muted);margin-bottom:32px;animation:fadeUp .6s ease both}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:100px;padding:6px 16px;font-size:13px;color:var(--muted);margin-bottom:16px;animation:fadeUp .6s ease both}
 .pulse-dot{width:6px;height:6px;background:#22c55e;border-radius:50%;display:inline-block;animation:pulse-anim 2s infinite;flex-shrink:0}
 .chrome-img{width:20px;height:20px;border-radius:50%;flex-shrink:0}
+/* PH LAUNCH BADGE */
+.ph-launch-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  background:#fff;border:1.5px solid #ff6154;
+  border-radius:100px;padding:8px 20px;
+  font-size:13px;font-weight:600;color:#ff6154;
+  margin-bottom:32px;animation:fadeUp .6s .05s ease both;
+  text-decoration:none;transition:all .2s;
+  box-shadow:0 4px 20px rgba(255,97,84,0.15);
+}
+.ph-launch-badge:hover{background:#ff6154;color:#fff;transform:translateY(-1px);box-shadow:0 8px 28px rgba(255,97,84,0.3);}
+.ph-arrow{font-size:16px;transition:transform .2s;}
+.ph-launch-badge:hover .ph-arrow{transform:translateX(3px);}
+.ph-logo{width:20px;height:20px;flex-shrink:0;}
 h1{font-family:var(--font-display);font-size:clamp(48px,8vw,88px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:24px;animation:fadeUp .7s .1s ease both}
 h1 em{color:var(--violet);font-style:normal}
 .tw-wrap{display:inline-block;min-width:2px}
@@ -292,11 +306,26 @@ posthog.init('phc_yGPVDEMQhr9K8im4LU3BktmuTCoXBs5imJtfUBVtoa5j',{api_host:'https
     <div class="hero-blob blob2"></div>
     <div class="hero-blob blob3"></div>
   </div>
+
+  <!-- Chrome badge -->
   <div class="hero-badge">
     <span class="pulse-dot"></span>
     <span data-i18n="badge">Now available for</span>
     <img src="chrome.png" class="chrome-img" alt="Chrome"/>
   </div>
+
+  <!-- Product Hunt launch badge -->
+  <a href="https://www.producthunt.com/products/iqpage?utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-iqpage"
+     target="_blank" rel="noopener noreferrer" class="ph-launch-badge">
+    <svg class="ph-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="20" fill="#FF6154"/>
+      <path d="M22.5 20a2.5 2.5 0 0 0 0-5H17v5h5.5Z" fill="white"/>
+      <path d="M17 20v5h3v-5h-3Z" fill="white"/>
+    </svg>
+    Launching on Product Hunt · May 13th
+    <span class="ph-arrow">→</span>
+  </a>
+
   <h1>Read Smarter.<br/><em><span class="tw-wrap"><span id="tw"></span></span></em></h1>
   <p class="hero-sub" data-i18n="hero_sub">IQPage is your AI reading assistant. Summarize any webpage, chat with its content, detect bias, and highlight smarter — all in seconds.</p>
   <div class="hero-actions">
@@ -307,6 +336,7 @@ posthog.init('phc_yGPVDEMQhr9K8im4LU3BktmuTCoXBs5imJtfUBVtoa5j',{api_host:'https
     <a href="#features" class="btn-secondary" data-i18n="cta_secondary">See how it works</a>
   </div>
   <p class="hero-note" data-i18n="hero_note">✓ Free forever plan · ✓ No credit card required · ✓ 30 second setup</p>
+
   <div class="mockup-wrap">
     <div class="mockup">
       <div class="mockup-bar">
@@ -479,11 +509,6 @@ posthog.init('phc_yGPVDEMQhr9K8im4LU3BktmuTCoXBs5imJtfUBVtoa5j',{api_host:'https
 </section>
 
 <footer>
-  <p style="margin-bottom:16px">
-    <a href="https://www.producthunt.com/products/iqpage?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-iqpage" target="_blank" rel="noopener noreferrer">
-      <img alt="IQPage on Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1136904&theme=light&t=1777997026042"/>
-    </a>
-  </p>
   <p style="margin-bottom:12px">
     <a href="/privacy" data-i18n="privacy">Privacy Policy</a> &nbsp;·&nbsp;
     <a href="/terms" data-i18n="terms">Terms of Service</a> &nbsp;·&nbsp;
