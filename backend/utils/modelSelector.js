@@ -1,4 +1,4 @@
-function selectModel({ userPlan, task, wordCount = 0 }) {
+function selectModel({ userPlan, task, wordCount = 0, powerFairUse = false }) {
   if (userPlan === 'free' || userPlan === 'edu') {
     return 'claude-haiku-4-5';
   }
@@ -12,6 +12,8 @@ function selectModel({ userPlan, task, wordCount = 0 }) {
   ];
 
   if (userPlan === 'power') {
+    // Fair use: silently downgrade to Haiku above 600 summaries/month
+    if (powerFairUse) return 'claude-haiku-4-5';
     return 'claude-sonnet-4-5';
   }
 

@@ -17,7 +17,12 @@ router.post('/', checkUsage('summaries'), async (req, res) => {
 
   const { id: userId, profile } = req.user;
   const wordCount = pageText.split(/\s+/).length;
-  const model = selectModel({ userPlan: profile.plan, task: 'summarize', wordCount });
+  const model = selectModel({
+    userPlan: profile.plan,
+    task: 'summarize',
+    wordCount,
+    powerFairUse: req.powerFairUse ?? false,
+  });
 
   // Truncate to ~8000 words to stay within token limits
   const truncatedText = pageText.split(/\s+/).slice(0, 8000).join(' ');
