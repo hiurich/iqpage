@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Summarizer for Chrome — IQPage | Summarize Any Webpage in Seconds</title>
+<meta name="description" content="The best AI summarizer for Chrome. IQPage summarizes any webpage in under 10 seconds, lets you chat with the content, and detects bias. Free forever plan. Powered by Claude AI."/>
+<link rel="canonical" href="https://iqpage.app/ai-summarizer-for-chrome"/>
+<meta property="og:title" content="AI Summarizer for Chrome — IQPage"/>
+<meta property="og:description" content="Summarize any webpage in seconds. Chat with content. Detect bias. The AI reading assistant that works on every site."/>
+<meta property="og:image" content="https://iqpage.app/og_image.jpg"/>
+<meta property="og:url" content="https://iqpage.app/ai-summarizer-for-chrome"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="AI Summarizer for Chrome — IQPage"/>
+<meta name="twitter:description" content="Summarize any webpage in seconds. Free forever plan. Powered by Claude AI."/>
+<meta name="twitter:image" content="https://iqpage.app/og_image.jpg"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "IQPage — AI Summarizer for Chrome",
+  "applicationCategory": "BrowserApplication",
+  "operatingSystem": "Chrome",
+  "url": "https://iqpage.app/ai-summarizer-for-chrome",
+  "description": "AI-powered Chrome extension that summarizes any webpage in under 10 seconds. Powered by Claude AI from Anthropic.",
+  "offers": [
+    {"@type": "Offer", "price": "0", "priceCurrency": "USD", "name": "Free"},
+    {"@type": "Offer", "price": "12", "priceCurrency": "USD", "name": "Pro"}
+  ],
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "5",
+    "reviewCount": "2"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0a0a0f;
+  --paper:#f5f3ee;
+  --violet:#5b4fff;
+  --violet-dark:#3d35c0;
+  --accent:#ff5c35;
+  --muted:#888;
+  --border:rgba(0,0,0,0.08);
+  --font-display:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);overflow-x:hidden;line-height:1.6}
+
+/* NAV */
+nav{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;background:rgba(245,243,238,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:18px;color:var(--ink);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--violet);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+.nav-cta{background:var(--ink);color:#fff;border:none;padding:10px 22px;border-radius:100px;font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:background .2s}
+.nav-cta:hover{background:var(--violet)}
+
+/* HERO */
+.hero{padding:80px 24px 60px;text-align:center;max-width:800px;margin:0 auto;position:relative}
+.hero-kw{display:inline-block;background:rgba(91,79,255,0.08);color:var(--violet);border:1px solid rgba(91,79,255,0.2);border-radius:100px;padding:5px 16px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px}
+h1{font-family:var(--font-display);font-size:clamp(36px,6vw,68px);font-weight:800;line-height:1;letter-spacing:-2px;margin-bottom:20px;color:var(--ink)}
+h1 span{color:var(--violet)}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:#555;max-width:540px;margin:0 auto 36px;font-weight:300;line-height:1.6}
+.cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.btn-primary{background:var(--violet);color:#fff;border:none;padding:16px 32px;border-radius:100px;font-size:16px;font-weight:500;font-family:var(--font-body);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(91,79,255,0.35)}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink);padding:16px 32px;border-radius:100px;font-size:16px;font-weight:500;font-family:var(--font-body);cursor:pointer;text-decoration:none;transition:all .2s}
+.btn-ghost:hover{background:var(--ink);color:#fff}
+.hero-note{font-size:12px;color:var(--muted)}
+
+/* HOW IT WORKS */
+.section{padding:80px 24px;max-width:1000px;margin:0 auto}
+.section-chip{display:inline-block;background:var(--violet);color:#fff;border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+h2{font-family:var(--font-display);font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.05;letter-spacing:-1.5px;margin-bottom:12px}
+.section-sub{font-size:16px;color:#666;margin-bottom:48px;font-weight:300;max-width:520px}
+
+/* STEPS */
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.step-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:28px;position:relative;transition:transform .2s,box-shadow .2s}
+.step-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.08)}
+.step-num{width:40px;height:40px;background:var(--violet);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:16px;margin-bottom:16px}
+.step-card h3{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:8px}
+.step-card p{font-size:14px;color:#666;line-height:1.6}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.feat{background:#fff;border:1px solid var(--border);border-radius:20px;padding:28px;transition:transform .2s,border-color .2s}
+.feat:hover{transform:translateY(-3px);border-color:rgba(91,79,255,0.3)}
+.feat-icon{font-size:28px;margin-bottom:14px}
+.feat h3{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:8px}
+.feat p{font-size:14px;color:#666;line-height:1.6}
+.feat-tag{display:inline-block;margin-top:12px;font-size:10px;padding:3px 10px;border-radius:100px;font-weight:600}
+.tag-free{background:rgba(34,197,94,0.1);color:#16a34a}
+.tag-pro{background:rgba(91,79,255,0.1);color:var(--violet)}
+
+/* COMPARISON */
+.compare-section{background:var(--ink);color:#fff;padding:80px 24px;text-align:center}
+.compare-inner{max-width:900px;margin:0 auto}
+.compare-section h2{color:#fff;margin-bottom:12px}
+.compare-section .section-sub{color:rgba(255,255,255,0.5);margin:0 auto 48px}
+.compare-table{width:100%;border-collapse:collapse;text-align:left}
+.compare-table th{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:500}
+.compare-table td{padding:14px 16px;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.8)}
+.compare-table tr.iq-row td{color:#fff;font-weight:500}
+.compare-table tr.iq-row td:first-child{color:var(--violet);font-weight:700}
+.check{color:#22c55e}
+.cross{color:rgba(255,255,255,0.25)}
+.compare-table td:first-child{font-weight:500}
+
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.testi-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:24px}
+.stars{color:#fbbf24;font-size:13px;margin-bottom:10px}
+.testi-text{font-size:14px;line-height:1.7;color:#333;margin-bottom:16px}
+.testi-author{display:flex;align-items:center;gap:10px}
+.testi-avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+.testi-name{font-size:13px;font-weight:600}
+.testi-role{font-size:11px;color:var(--muted)}
+
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:12px;max-width:700px;margin:0 auto}
+.faq-item{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.faq-q{width:100%;padding:18px 22px;background:none;border:none;text-align:left;font-family:var(--font-display);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--ink)}
+.faq-q .arrow{transition:transform .3s;font-size:18px;color:var(--violet)}
+.faq-item.open .faq-q .arrow{transform:rotate(45deg)}
+.faq-a{padding:0 22px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.faq-item.open .faq-a{max-height:200px;padding:0 22px 18px}
+.faq-a p{font-size:14px;color:#555;line-height:1.7}
+
+/* CTA FINAL */
+.cta-section{background:var(--violet);padding:80px 24px;text-align:center}
+.cta-section h2{font-family:var(--font-display);font-size:clamp(30px,5vw,54px);font-weight:800;color:#fff;line-height:1.05;letter-spacing:-1.5px;margin-bottom:16px}
+.cta-section p{font-size:17px;color:rgba(255,255,255,0.75);margin-bottom:36px}
+.btn-white{background:#fff;color:var(--violet);border:none;padding:16px 36px;border-radius:100px;font-size:16px;font-weight:600;cursor:pointer;text-decoration:none;font-family:var(--font-body);transition:transform .2s,box-shadow .2s;display:inline-block}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 16px 50px rgba(0,0,0,0.2)}
+
+/* BREADCRUMB */
+.breadcrumb{padding:12px 24px;font-size:12px;color:var(--muted);max-width:1000px;margin:0 auto}
+.breadcrumb a{color:var(--muted);text-decoration:none}
+.breadcrumb a:hover{color:var(--violet)}
+
+/* FOOTER */
+footer{background:var(--ink);color:rgba(255,255,255,0.5);padding:32px 24px;text-align:center;font-size:13px}
+footer a{color:rgba(255,255,255,0.5);text-decoration:none}
+footer a:hover{color:#fff}
+
+/* DARK SECTION */
+.dark-section{background:var(--ink);color:#fff;padding:80px 24px}
+.dark-section .section-chip{background:rgba(91,79,255,0.3);color:#a89fff}
+.dark-section h2{color:#fff}
+.dark-section .section-sub{color:rgba(255,255,255,0.5)}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:0}
+
+@media(max-width:600px){
+  .cta-row{flex-direction:column;align-items:center}
+  .btn-primary,.btn-ghost{width:100%;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://iqpage.app" class="nav-logo">
+    <div class="nav-logo-icon">IQ</div>
+    IQPage
+  </a>
+  <a href="https://chromewebstore.google.com/detail/igbighpdnelefhkbaknocckccpjconln" class="nav-cta" target="_blank">Add to Chrome — Free</a>
+</nav>
+
+<!-- BREADCRUMB (SEO) -->
+<div class="breadcrumb">
+  <a href="https://iqpage.app">IQPage</a> › AI Summarizer for Chrome
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-kw">AI Summarizer for Chrome</div>
+  <h1>Summarize <span>Any Webpage</span><br/>in 10 Seconds</h1>
+  <p class="hero-sub">IQPage is the AI summarizer Chrome extension that reads any article, paper, or blog post and delivers a structured breakdown — without leaving the tab. Powered by Claude AI.</p>
+  <div class="cta-row">
+    <a href="https://chromewebstore.google.com/detail/igbighpdnelefhkbaknocckccpjconln" class="btn-primary" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      Add to Chrome — It's Free
+    </a>
+    <a href="https://iqpage.app" class="btn-ghost">See all features →</a>
+  </div>
+  <p class="hero-note">✓ Free forever plan &nbsp;·&nbsp; ✓ No credit card required &nbsp;·&nbsp; ✓ Works on any website</p>
+</section>
+
+<hr class="divider"/>
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="section-chip">How it works</div>
+  <h2>Three steps.<br/>Infinite clarity.</h2>
+  <p class="section-sub">IQPage installs in 30 seconds and works on every site you already read.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>Install IQPage</h3>
+      <p>Add the Chrome extension from the Web Store. One click, 30 seconds, no configuration needed.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>Open any article</h3>
+      <p>Navigate to any webpage — news, research paper, blog, Wikipedia. IQPage works everywhere.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>Click Summarize</h3>
+      <p>Get a structured summary in under 10 seconds. Ask follow-up questions. Save citations. Export to PDF.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-chip">Features</div>
+  <h2>More than a<br/>summarizer.</h2>
+  <p class="section-sub">IQPage is a complete AI reading assistant — not just a summary button.</p>
+  <div class="features-grid">
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <h3>Instant Summaries</h3>
+      <p>Structured breakdown of any webpage in under 10 seconds. Executive summary, key points, and main takeaway. Choose output language independently.</p>
+      <span class="feat-tag tag-free">Free</span>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">💬</div>
+      <h3>Chat Q&A with the Page</h3>
+      <p>Ask anything about what you just read. IQPage holds the full page context and answers with precision — like having a research assistant on every tab.</p>
+      <span class="feat-tag tag-free">Free</span>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">✨</div>
+      <h3>Smart Highlights</h3>
+      <p>Select any text and instantly Explain, Translate, Save as citation, or add a Note — all without leaving the page.</p>
+      <span class="feat-tag tag-free">Free</span>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⚖️</div>
+      <h3>Bias Detection</h3>
+      <p>Analyzes news articles for loaded language, editorial framing, and potential bias. Read critically, always.</p>
+      <span class="feat-tag tag-pro">Pro</span>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📄</div>
+      <h3>Export to PDF & Word</h3>
+      <p>Turn any AI summary into a professional document with one click. PDF and Word export for research and collaboration.</p>
+      <span class="feat-tag tag-pro">Pro</span>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📚</div>
+      <h3>Works on Any Site</h3>
+      <p>Reuters, NYT, ArXiv, Medium, Wikipedia, GitHub, blogs — IQPage works on every page with text content.</p>
+      <span class="feat-tag tag-free">Free</span>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<div class="compare-section">
+  <div class="compare-inner">
+    <div class="section-chip" style="background:rgba(91,79,255,0.3);color:#a89fff">Comparison</div>
+    <h2>IQPage vs other<br/>Chrome summarizers</h2>
+    <p class="section-sub" style="color:rgba(255,255,255,0.5);max-width:480px;margin:0 auto 48px">Most AI summarizers stop at the summary. IQPage goes further.</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>IQPage</th>
+          <th>Glasp</th>
+          <th>Kome</th>
+          <th>Others</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="iq-row">
+          <td>AI Summarizer for any webpage</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Chat Q&A with page content</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Bias detection</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Smart highlights (Explain, Translate, Save)</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Export to PDF & Word</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Free forever plan</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Powered by Claude AI (Anthropic)</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section class="section">
+  <div class="section-chip">Reviews</div>
+  <h2>What readers say</h2>
+  <p class="section-sub">Real reviews from Chrome Web Store users.</p>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"Wow, this extension is awesome. It's a lifesaver for my son's schoolwork and saves me so much time. I love that I don't even have to leave the tab."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">H</div>
+        <div><div class="testi-name">Heidi Aguilar</div><div class="testi-role">Chrome Web Store · May 2026</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"Love how it highlights the key points automatically. It's like having a super smart research assistant right in my browser."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">J</div>
+        <div><div class="testi-name">Jaime Bolton</div><div class="testi-role">Chrome Web Store · May 2026</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p class="testi-text">"The bias detection feature is incredible for my work. I can instantly see how different outlets frame the same story. Worth every penny."</p>
+      <div class="testi-author">
+        <div class="testi-avatar">A</div>
+        <div><div class="testi-name">Alex T.</div><div class="testi-role">Media Analyst</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- FAQ -->
+<section class="section" style="text-align:center">
+  <div class="section-chip">FAQ</div>
+  <h2>Frequently asked questions</h2>
+  <p class="section-sub" style="margin:0 auto 40px">Everything about the IQPage AI summarizer for Chrome.</p>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What is IQPage and how does the AI summarizer work? <span class="arrow">+</span></button>
+      <div class="faq-a"><p>IQPage is a Chrome extension powered by Claude AI (Anthropic). When you click Summarize on any webpage, IQPage reads the full page text and generates a structured breakdown — executive summary, key points, and main takeaway — in under 10 seconds. No copy-pasting, no tab switching.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Is IQPage free? <span class="arrow">+</span></button>
+      <div class="faq-a"><p>Yes. IQPage has a free forever plan with 3 summaries per week and 5 Q&A per week — no credit card required. Paid plans (Edu $5/mo, Pro $12/mo, Power $29/mo) unlock more summaries, bias detection, PDF export and more.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What websites does the AI summarizer work on? <span class="arrow">+</span></button>
+      <div class="faq-a"><p>IQPage works on any website with text content — news articles (Reuters, NYT, BBC), research papers (ArXiv, PubMed), blogs (Medium, Substack), Wikipedia, GitHub, and more. If there's text, IQPage can summarize it.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What AI model does IQPage use? <span class="arrow">+</span></button>
+      <div class="faq-a"><p>IQPage is powered by Claude AI from Anthropic — one of the most capable and safe AI models available. Free and Edu plans use Claude Haiku. Pro and Power plans use Claude Sonnet for higher quality responses.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">How is IQPage different from other Chrome summarizers? <span class="arrow">+</span></button>
+      <div class="faq-a"><p>Most summarizers just give you a TL;DR. IQPage adds Chat Q&A with full page context, bias detection, smart highlights (Explain, Translate, Save, Note), PDF/Word export, and article comparison across multiple sources. It's a complete reading assistant, not just a summary button.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <h2>The best AI summarizer<br/>for Chrome. Free.</h2>
+  <p>Install in 30 seconds. No credit card. Works on any website.</p>
+  <a href="https://chromewebstore.google.com/detail/igbighpdnelefhkbaknocckccpjconln" class="btn-white" target="_blank">Add to Chrome — Free →</a>
+</section>
+
+<footer>
+  <p style="margin-bottom:10px">
+    <a href="https://iqpage.app">Home</a> &nbsp;·&nbsp;
+    <a href="https://iqpage.app/privacy">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="https://iqpage.app/terms">Terms of Service</a> &nbsp;·&nbsp;
+    <a href="mailto:info@iqpage.app">info@iqpage.app</a>
+  </p>
+  <p>© 2026 IQPage. Powered by Claude AI (Anthropic).</p>
+</footer>
+
+<script>
+function toggleFaq(btn){
+  const item=btn.parentElement;
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!isOpen)item.classList.add('open');
+}
+</script>
+</body>
+</html>
