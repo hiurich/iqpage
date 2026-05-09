@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Summarize Any Webpage with AI — IQPage | Free Chrome Extension</title>
+<meta name="description" content="Summarize any webpage in seconds with IQPage. The AI Chrome extension that reads articles, papers, and blogs for you. Free forever plan. Powered by Claude AI."/>
+<link rel="canonical" href="https://iqpage.app/summarize-any-webpage"/>
+<meta property="og:title" content="Summarize Any Webpage with AI — IQPage"/>
+<meta property="og:description" content="Summarize any webpage in seconds. No copy-paste. No tab switching. Free Chrome extension powered by Claude AI."/>
+<meta property="og:image" content="https://iqpage.app/og_image.jpg"/>
+<meta property="og:url" content="https://iqpage.app/summarize-any-webpage"/>
+<meta property="og:type" content="website"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"IQPage — Summarize Any Webpage","applicationCategory":"BrowserApplication","operatingSystem":"Chrome","url":"https://iqpage.app/summarize-any-webpage","description":"Chrome extension that summarizes any webpage in under 10 seconds using Claude AI.","offers":[{"@type":"Offer","price":"0","priceCurrency":"USD","name":"Free"},{"@type":"Offer","price":"12","priceCurrency":"USD","name":"Pro"}]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#0a0a0f;--paper:#f5f3ee;--violet:#5b4fff;--accent:#ff5c35;--muted:#888;--border:rgba(0,0,0,0.08);--font-display:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);overflow-x:hidden;line-height:1.6}
+nav{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;background:rgba(245,243,238,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:18px;color:var(--ink);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--violet);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+.nav-cta{background:var(--ink);color:#fff;border:none;padding:10px 22px;border-radius:100px;font-family:var(--font-body);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:background .2s}
+.nav-cta:hover{background:var(--violet)}
+.breadcrumb{padding:12px 24px;font-size:12px;color:var(--muted);max-width:1000px;margin:0 auto}
+.breadcrumb a{color:var(--muted);text-decoration:none}.breadcrumb a:hover{color:var(--violet)}
+.hero{padding:80px 24px 60px;text-align:center;max-width:800px;margin:0 auto}
+.chip{display:inline-block;background:rgba(91,79,255,0.08);color:var(--violet);border:1px solid rgba(91,79,255,0.2);border-radius:100px;padding:5px 16px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px}
+h1{font-family:var(--font-display);font-size:clamp(36px,6vw,68px);font-weight:800;line-height:1;letter-spacing:-2px;margin-bottom:20px}
+h1 span{color:var(--violet)}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:#555;max-width:540px;margin:0 auto 36px;font-weight:300;line-height:1.6}
+.cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.btn-primary{background:var(--violet);color:#fff;border:none;padding:16px 32px;border-radius:100px;font-size:16px;font-weight:500;font-family:var(--font-body);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(91,79,255,0.35)}
+.hero-note{font-size:12px;color:var(--muted)}
+.section{padding:72px 24px;max-width:1000px;margin:0 auto}
+.section-chip{display:inline-block;background:var(--violet);color:#fff;border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px}
+h2{font-family:var(--font-display);font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.05;letter-spacing:-1.5px;margin-bottom:12px}
+.section-sub{font-size:16px;color:#666;margin-bottom:48px;font-weight:300;max-width:520px}
+.sites-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:40px}
+.site-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:12px;transition:transform .2s,border-color .2s}
+.site-card:hover{transform:translateY(-2px);border-color:rgba(91,79,255,0.3)}
+.site-icon{font-size:22px}
+.site-name{font-family:var(--font-display);font-weight:700;font-size:14px}
+.use-cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.use-case{background:#fff;border:1px solid var(--border);border-radius:20px;padding:28px;transition:transform .2s}
+.use-case:hover{transform:translateY(-3px)}
+.use-case-icon{font-size:28px;margin-bottom:14px}
+.use-case h3{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:8px}
+.use-case p{font-size:14px;color:#666;line-height:1.6}
+.dark-section{background:#0a0a0f;color:#fff;padding:72px 24px;text-align:center}
+.dark-section h2{color:#fff;margin-bottom:12px}
+.dark-section .section-sub{color:rgba(255,255,255,0.5);margin:0 auto 48px}
+.steps-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;max-width:900px;margin:0 auto}
+.step{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px;text-align:left}
+.step-n{width:36px;height:36px;background:var(--violet);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:15px;color:#fff;margin-bottom:16px}
+.step h3{font-family:var(--font-display);font-weight:700;font-size:16px;margin-bottom:8px}
+.step p{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6}
+.faq-list{display:flex;flex-direction:column;gap:12px;max-width:700px;margin:0 auto}
+.faq-item{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.faq-q{width:100%;padding:18px 22px;background:none;border:none;text-align:left;font-family:var(--font-display);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;color:var(--ink)}
+.faq-q .arrow{transition:transform .3s;font-size:18px;color:var(--violet)}
+.faq-item.open .faq-q .arrow{transform:rotate(45deg)}
+.faq-a{padding:0 22px;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.faq-item.open .faq-a{max-height:200px;padding:0 22px 18px}
+.faq-a p{font-size:14px;color:#555;line-height:1.7}
+.cta-section{background:var(--violet);padding:80px 24px;text-align:center}
+.cta-section h2{font-family:var(--font-display);font-size:clamp(28px,5vw,52px);font-weight:800;color:#fff;line-height:1.05;letter-spacing:-1.5px;margin-bottom:16px}
+.cta-section p{font-size:17px;color:rgba(255,255,255,0.75);margin-bottom:36px}
+.btn-white{background:#fff;color:var(--violet);border:none;padding:16px 36px;border-radius:100px;font-size:16px;font-weight:600;cursor:pointer;text-decoration:none;font-family:var(--font-body);transition:transform .2s,box-shadow .2s;display:inline-block}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 16px 50px rgba(0,0,0,0.2)}
+footer{background:#0a0a0f;color:rgba(255,255,255,0.5);padding:32px 24px;text-align:center;font-size:13px}
+footer a{color:rgba(255,255,255,0.5);text-decoration:none}.footer a:hover{color:#fff}
+hr{border:none;border-top:1px solid var(--border)}
+@media(max-width:600px){.cta-row{flex-direction:column;align-items:center}.btn-primary{width:100%;justify-content:center}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="https://iqpage.app" class="nav-logo"><div class="nav-logo-icon">IQ</div>IQPage</a>
+  <a href="https://chromewebstore.google.com/detail/igbighpdnelefhkbaknocckccpjconln" class="nav-cta" target="_blank">Add to Chrome — Free</a>
+</nav>
+<div class="breadcrumb"><a href="https://iqpage.app">IQPage</a> › Summarize Any Webpage</div>
+<section class="hero">
+  <div class="chip">Summarize Any Webpage</div>
+  <h1>Stop Reading.<br/><span>Start Understanding.</span></h1>
+  <p class="hero-sub">IQPage summarizes any webpage in under 10 seconds — articles, research papers, blogs, news. No copy-paste. No tab switching. Just clarity.</p>
+  <div class="cta-row">
+    <a href="https://chromewebstore.google.com/detail/igbighpdnelefhkbaknocckccpjconln" class="btn-primary" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      Summarize Any Page — Free
+    </a>
+  </div>
+  <p class="hero-note">✓ Free forever plan &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ 30 second setup</p>
+</section>
+<hr/>
+<section class="section">
+  <div class="section-chip">Works everywhere</div>
+  <h2>Every site you read.<br/>Summarized instantly.</h2>
+  <p class="section-sub">IQPage works on any website with text. Here are some of the most popular:</p>
+  <div class="sites-grid">
+    <div class="site-card"><div class="site-icon">📰</div><div class="site-name">Reuters</div></div>
+    <div class="site-card"><div class="site-icon">📰</div><div class="site-name">NYT</div></div>
+    <div class="site-card"><div class="site-icon">🔬</div><div class="site-name">ArXiv</div></div>
+    <div class="site-card"><div class="site-icon">✍️</div><div class="site-name">Medium</div></div>
+    <div class="site-card"><div class="site-icon">📚</div><div class="site-name">Wikipedia</div></div>
+    <div class="site-card"><div class="site-icon">💻</div><div class="site-name">GitHub</div></div>
+    <div class="site-card"><div class="site-icon">📊</div><div class="site-name">Bloomberg</div></div>
+    <div class="site-card"><div class="site-icon">🎓</div><div class="site-name">PubMed</div></div>
+  </div>
+</section>
+<hr/>
+<section class="section">
+  <div class="section-chip">Use cases</div>
+  <h2>Who uses IQPage<br/>to summarize webpages?</h2>
+  <p class="section-sub">From students to journalists, anyone who reads a lot benefits from instant summaries.</p>
+  <div class="use-cases">
+    <div class="use-case"><div class="use-case-icon">🎓</div><h3>Students & Researchers</h3><p>Summarize academic papers and research in seconds. Get methodology, findings, and conclusions without reading 40 pages.</p></div>
+    <div class="use-case"><div class="use-case-icon">📰</div><h3>Journalists</h3><p>Quickly digest multiple news sources to understand how different outlets cover the same story. Save hours every day.</p></div>
+    <div class="use-case"><div class="use-case-icon">💼</div><h3>Professionals</h3><p>Summarize industry reports, competitor blogs, and market analyses in seconds. Stay informed without drowning in content.</p></div>
+    <div class="use-case"><div class="use-case-icon">🧠</div><h3>Curious Readers</h3><p>Read more, understand more. Use IQPage on any article that seems too long — get the key points and decide if it's worth reading fully.</p></div>
+  </div>
+</section>
+<div class="dark-section">
+  <div class="section-chip" style="background:rgba(91,79,255,0.3);color:#a89fff">How it works</div>
+  <h2>Up and running<br/>in 30 seconds</h2>
+  <p class="section-sub" style="color:rgba(255,255,255,0.5);max-width:480px;margin:0 auto 48px">No configuration. No API keys. Just install and start summarizing.</p>
+  <div class="steps-row">
+    <div class="step"><div class="step-n">1</div><h3>Install</h3><p>Add IQPage to Chrome from the Web Store. One click, 30 seconds.</p></div>
+    <div class="step"><div class="step-n">2</div><h3>Open any page</h3><p>Navigate to any article, paper, or blog post you want to understand.</p></div>
+    <div class="step"><div class="step-n">3</div><h3>Summarize</h3><p>Click the IQPage icon and get a structured summary in under 10 seconds.</p></div>
+    <div class="step"><div class="step-n">4</div><h3>Go deeper</h3><p>Ask questions, save citations, export to PDF or Word.</p></div>
+  </div>
+</div>
+<section class="section" style="text-align:center">
+  <div class="section-chip">FAQ</div>
+  <h2>Frequently asked questions</h2>
+  <p class="section-sub" style="margin:0 auto 40px">About summarizing webpages with IQPage.</p>
+  <div class="faq-list">
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Can IQPage summarize any webpage? <span class="arrow">+</span></button><div class="faq-a"><p>Yes. IQPage works on any website with text content — news articles, research papers, blogs, Wikipedia entries, GitHub READMEs, and more. If there's text on the page, IQPage can summarize it in under 10 seconds.</p></div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">How long does it take to summarize a webpage? <span class="arrow">+</span></button><div class="faq-a"><p>Under 10 seconds for most pages. IQPage reads the full page text, sends it to Claude AI (Anthropic), and returns a structured summary with executive summary, key points, and main takeaway.</p></div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Is there a limit on how many pages I can summarize? <span class="arrow">+</span></button><div class="faq-a"><p>The free plan includes 3 summaries per week. Edu ($5/mo) gives 80/month, Pro ($12/mo) gives 200/month, and Power ($29/mo) gives unlimited summaries. All plans reset automatically.</p></div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Does IQPage work on paywalled articles? <span class="arrow">+</span></button><div class="faq-a"><p>IQPage reads what's visible in your browser. If you have access to the full article (subscription, login), IQPage will summarize the full content. For paywalled content you can't access, it will summarize what's available.</p></div></div>
+  </div>
+</section>
+<section class="cta-section">
+  <h2>Summarize any webpage.<br/>Starting now.</h2>
+  <p>Free forever plan. No credit card. Works in 30 seconds.</p>
+  <a href="https://chromewebstore.google.com/detail/igbighpdnelefhkbaknocckccpjconln" class="btn-white" target="_blank">Add to Chrome — Free →</a>
+</section>
+<footer><p style="margin-bottom:10px"><a href="https://iqpage.app">Home</a> &nbsp;·&nbsp; <a href="https://iqpage.app/privacy">Privacy</a> &nbsp;·&nbsp; <a href="mailto:info@iqpage.app">info@iqpage.app</a></p><p>© 2026 IQPage. Powered by Claude AI (Anthropic).</p></footer>
+<script>function toggleFaq(btn){const item=btn.parentElement;const isOpen=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));if(!isOpen)item.classList.add('open');}</script>
+</body>
+</html>
