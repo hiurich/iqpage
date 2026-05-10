@@ -47,12 +47,18 @@ router.post('/', async (req, res) => {
           console.warn(`Hotmart: producto no reconocido — "${productName}"`);
           break;
         }
+
+        const isAnual = productName.includes('Anual');
+        const subscriptionEnd = isAnual
+          ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+          : null;
+
         await supabase
           .from('profiles')
-          .update({ plan })
+          .update({ plan, subscription_end: subscriptionEnd })
           .eq('email', email);
 
-        console.log(`Plan actualizado: ${email} → ${plan}`);
+        console.log(`Plan actualizado: ${email} → ${plan} (${isAnual ? 'anual' : 'mensual'})`);
         break;
       }
 
@@ -60,7 +66,7 @@ router.post('/', async (req, res) => {
       case 'PURCHASE_REFUNDED': {
         await supabase
           .from('profiles')
-          .update({ plan: 'free' })
+          .update({ plan: 'free', subscription_end: null })
           .eq('email', email);
 
         console.log(`Plan revertido a free: ${email}`);
