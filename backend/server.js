@@ -14,7 +14,7 @@ const nicheRouter = require('./routes/niche');
 const compareRouter = require('./routes/compare');
 const userRouter = require('./routes/user');
 const stripeRouter = require('./routes/stripe');
-
+const hotmartRouter = require('./routes/webhook-hotmart');
 const app = express();
 
 // Security headers — applied to every response before any route handler
@@ -30,7 +30,7 @@ app.use(helmet({
 
 // Stripe webhook needs raw body — must be registered BEFORE express.json()
 app.use('/stripe/webhook', express.raw({ type: 'application/json' }), stripeRouter);
-
+app.use('/api/webhook/hotmart', express.json(), hotmartRouter);
 app.use(express.json({ limit: '2mb' }));
 // Only the specific extension ID is allowed, not any chrome-extension:// origin.
 // Set EXTENSION_ID in .env and Railway environment variables.
