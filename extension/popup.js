@@ -274,9 +274,10 @@ if (menuBtn && dropdownMenu) {
 // Upgrade button — visible in header for free users
 const upgradeHeaderBtn = $('btn-upgrade-header');
 if (upgradeHeaderBtn) {
-  upgradeHeaderBtn.addEventListener('click', async (e) => {
+  upgradeHeaderBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    await openCheckout(STRIPE_PRICES.pro);
+    phCapture('upgrade_clicked');
+    chrome.tabs.create({ url: 'https://iqpage.app/#pricing' });
   });
 }
 
