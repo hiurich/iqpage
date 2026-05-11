@@ -29,6 +29,9 @@ const PRICE_TO_PLAN = {
   [process.env.STRIPE_PRICE_PRO]: 'pro',
   [process.env.STRIPE_PRICE_EDU]: 'edu',
   [process.env.STRIPE_PRICE_POWER]: 'power',
+  [process.env.STRIPE_PRICE_EDU_ANNUAL]: 'edu',
+  [process.env.STRIPE_PRICE_PRO_ANNUAL]: 'pro',
+  [process.env.STRIPE_PRICE_POWER_ANNUAL]: 'power',
 };
 
 // POST /api/create-checkout-session
