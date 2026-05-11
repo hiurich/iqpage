@@ -623,6 +623,16 @@ const pricingData={
   }
 };
 
+// Force monthly state on every page load, ignoring any browser form cache
+(function initBillingToggle(){
+  const toggle=document.getElementById('billing-toggle');
+  if(toggle){toggle.checked=false;}
+  const lm=document.getElementById('label-monthly');
+  const la=document.getElementById('label-annual');
+  if(lm){lm.classList.add('active');}
+  if(la){la.classList.remove('active');}
+})();
+
 function toggleBilling(){
   const isAnnual=document.getElementById('billing-toggle').checked;
   document.getElementById('label-monthly').classList.toggle('active',!isAnnual);
