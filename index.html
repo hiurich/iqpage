@@ -252,6 +252,8 @@ footer a:hover{color:#fff}
 .plan-price.annual-mode{font-size:32px;display:flex;align-items:baseline;}
 .plan-price-original{font-size:13px;color:var(--muted);text-decoration:line-through;margin-bottom:2px;}
 .plan-billing-note{font-size:11px;color:#16a34a;font-weight:600;margin-top:4px;}
+.plan-price-wrapper{min-height:90px;display:flex;flex-direction:column;justify-content:flex-start;}
+.price-card.featured .plan-price span{color:rgba(255,255,255,0.7);}
 .showcase{padding:100px 24px;background:var(--ink);color:#fff;position:relative;overflow:hidden;}
 .showcase::before{content:"";position:absolute;width:800px;height:800px;border-radius:50%;background:var(--violet);opacity:0.05;top:-300px;right:-200px;filter:blur(120px);}
 .showcase .section-label{color:var(--violet-light);}
@@ -645,37 +647,49 @@ function toggleBilling(){
   document.querySelectorAll('.price-card:not(:first-child)').forEach((card,i)=>{
     const plan=plans[i];
     const d=pricingData[mode][plan];
-    const priceEl=card.querySelector('.plan-price');
     const ctaEl=card.querySelector('.plan-cta');
 
-    // Remove sibling elements injected by a previous toggle call
-    const prev=priceEl.previousElementSibling;
-    const next=priceEl.nextElementSibling;
-    if(prev&&prev.classList.contains('plan-price-original'))prev.remove();
-    if(next&&next.classList.contains('plan-billing-note'))next.remove();
+    // Re-use or create the price wrapper (ensures fixed-height area across all plans)
+    let wrapper=card.querySelector('.plan-price-wrapper');
+    if(!wrapper){
+      // First toggle: wrap the existing .plan-price element
+      const priceEl=card.querySelector('.plan-price');
+      wrapper=document.createElement('div');
+      wrapper.className='plan-price-wrapper';
+      priceEl.parentNode.insertBefore(wrapper,priceEl);
+      wrapper.appendChild(priceEl);
+    }
+
+    // Clear anything previously injected inside the wrapper
+    wrapper.innerHTML='';
+
+    // Re-create .plan-price inside the (now empty) wrapper
+    const priceEl=document.createElement('div');
+    priceEl.className='plan-price';
 
     if(isAnnual){
       priceEl.classList.add('annual-mode');
 
-      // Tachado original — above .plan-price, small font via CSS class
+      // Tachado original — above .plan-price
       const originalEl=document.createElement('div');
       originalEl.className='plan-price-original';
       if(card.classList.contains('featured'))originalEl.style.color='rgba(255,255,255,0.6)';
       originalEl.textContent=`${d.original}/mo`;
-      priceEl.insertAdjacentElement('beforebegin',originalEl);
+      wrapper.appendChild(originalEl);
 
-      // Main price — new discounted price only
+      // Main price
       priceEl.innerHTML=`${d.price}<span>${d.period}</span>`;
+      wrapper.appendChild(priceEl);
 
-      // Annual total note — below .plan-price, green small font via CSS class
+      // Annual total note — below .plan-price
       const noteEl=document.createElement('div');
       noteEl.className='plan-billing-note';
       const yearly=Math.round(parseFloat(d.price.replace('$',''))*12);
       noteEl.textContent=`billed $${yearly}/yr`;
-      priceEl.insertAdjacentElement('afterend',noteEl);
+      wrapper.appendChild(noteEl);
     } else {
-      priceEl.classList.remove('annual-mode');
       priceEl.innerHTML=`${d.price}<span>${d.period}</span>`;
+      wrapper.appendChild(priceEl);
     }
     ctaEl.textContent=d.cta;
     ctaEl.href=d.link;
