@@ -178,20 +178,52 @@
   function showNoteOverlay(selectedText) {
     const overlay = document.createElement('div');
     overlay.id = 'IQPage-note-overlay';
-    overlay.innerHTML = `
-      <div class="IQPage-note-box">
-        <p style="font-size:13px;margin:0 0 8px;color:#a78bfa">Selected text:</p>
-        <p style="font-size:12px;color:#94a3b8;margin:0 0 12px;max-height:60px;overflow:auto">"${selectedText.slice(0, 200)}${selectedText.length > 200 ? '…' : ''}"</p>
-        <textarea id="IQPage-note-input" placeholder="Write your note here..."></textarea>
-        <div style="font-size:12px;color:#64748b;margin-top:6px">
-          <label><input type="checkbox" id="IQPage-expand-note" style="margin-right:4px">Ask AI to expand / question this note</label>
-        </div>
-        <div class="note-actions">
-          <button class="btn-cancel" id="IQPage-note-cancel">Cancel</button>
-          <button class="btn-save" id="IQPage-note-save">Save Note</button>
-        </div>
-      </div>
-    `;
+
+    const box = document.createElement('div');
+    box.className = 'IQPage-note-box';
+
+    const label = document.createElement('p');
+    label.style.cssText = 'font-size:13px;margin:0 0 8px;color:#a78bfa';
+    label.textContent = 'Selected text:';
+
+    const preview = document.createElement('p');
+    preview.style.cssText = 'font-size:12px;color:#94a3b8;margin:0 0 12px;max-height:60px;overflow:auto';
+    preview.textContent = `"${selectedText.slice(0, 200)}${selectedText.length > 200 ? '…' : ''}"`;
+
+    const textarea = document.createElement('textarea');
+    textarea.id = 'IQPage-note-input';
+    textarea.placeholder = 'Write your note here...';
+
+    const expandDiv = document.createElement('div');
+    expandDiv.style.cssText = 'font-size:12px;color:#64748b;margin-top:6px';
+    const expandLabel = document.createElement('label');
+    const expandCheckbox = document.createElement('input');
+    expandCheckbox.type = 'checkbox';
+    expandCheckbox.id = 'IQPage-expand-note';
+    expandCheckbox.style.marginRight = '4px';
+    expandLabel.appendChild(expandCheckbox);
+    expandLabel.appendChild(document.createTextNode('Ask AI to expand / question this note'));
+    expandDiv.appendChild(expandLabel);
+
+    const actions = document.createElement('div');
+    actions.className = 'note-actions';
+    const btnCancel = document.createElement('button');
+    btnCancel.className = 'btn-cancel';
+    btnCancel.id = 'IQPage-note-cancel';
+    btnCancel.textContent = 'Cancel';
+    const btnSave = document.createElement('button');
+    btnSave.className = 'btn-save';
+    btnSave.id = 'IQPage-note-save';
+    btnSave.textContent = 'Save Note';
+    actions.appendChild(btnCancel);
+    actions.appendChild(btnSave);
+
+    box.appendChild(label);
+    box.appendChild(preview);
+    box.appendChild(textarea);
+    box.appendChild(expandDiv);
+    box.appendChild(actions);
+    overlay.appendChild(box);
     document.body.appendChild(overlay);
 
     overlay.querySelector('#IQPage-note-cancel').addEventListener('click', () => overlay.remove());

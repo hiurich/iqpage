@@ -182,7 +182,7 @@ async function init() {
   showView('loading');
 
   try {
-    const stored = await chrome.storage.local.get(['jwt', 'user']);
+    const stored = await chrome.storage.session.get(['jwt', 'user']);
     const hasToken = Boolean(stored.jwt);
 
     if (!hasToken) {
@@ -286,7 +286,7 @@ if (signoutLink) {
     e.preventDefault();
     phCapture('user_signed_out');
     await sendMsg('SIGN_OUT').catch(() => {});
-    await chrome.storage.local.remove(['jwt', 'refresh_token', 'user']).catch(() => {});
+    await chrome.storage.session.remove(['jwt', 'refresh_token', 'user']).catch(() => {});
     location.reload();
   });
 }

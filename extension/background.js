@@ -57,6 +57,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 // ─── Message Router ───────────────────────────────────────────────────────────
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (sender.tab) {
+    const url = sender.url ?? '';
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      sendResponse({ error: 'Unauthorized sender' });
+      return true;
+    }
+  }
   handleMessage(message, sender)
     .then(sendResponse)
     .catch((err) => sendResponse({ error: err.message }));
@@ -120,7 +127,7 @@ async function sha256hex(text) {
  * 5 minutes. This prevents "Invalid or expired token" errors in the side panel.
  */
 async function getAuthToken() {
-  const { jwt, refresh_token } = await chrome.storage.local.get(['jwt', 'refresh_token']);
+  const { jwt, refresh_token } = await chrome.storage.session.get(['jwt', 'refresh_token']);
   if (!jwt) return { jwt: null };
 
   // Decode JWT payload to check expiration
@@ -162,7 +169,7 @@ async function refreshToken(refresh_token) {
     const session = await res.json();
     if (!session.access_token) return null;
 
-    await chrome.storage.local.set({
+    await chrome.storage.session.set({
       jwt: session.access_token,
       refresh_token: session.refresh_token,
       user: session.user,
@@ -231,7 +238,7 @@ async function signIn() {
       throw new Error(`Supabase auth failed: ${detail}`);
     }
 
-    await chrome.storage.local.set({
+    await chrome.storage.session.set({
       jwt: session.access_token,
       refresh_token: session.refresh_token,
       user: session.user,
@@ -247,7 +254,7 @@ async function signIn() {
 
 async function signOut() {
   try {
-    const { jwt } = await chrome.storage.local.get('jwt');
+    const { jwt } = await chrome.storage.session.get('jwt');
     if (jwt) {
       fetch(`${SUPABASE_URL}/auth/v1/logout`, {
         method: 'POST',
@@ -256,12 +263,12 @@ async function signOut() {
     }
   } catch {}
 
-  await chrome.storage.local.remove(['jwt', 'refresh_token', 'user']);
+  await chrome.storage.session.remove(['jwt', 'refresh_token', 'user']);
   return { success: true };
 }
 
 async function getUser() {
-  const { user } = await chrome.storage.local.get('user');
+  const { user } = await chrome.storage.session.get('user');
   return { user: user ?? null };
 }
 
@@ -292,7 +299,7 @@ async function apiRequest(endpoint, method = 'POST', body = null) {
   // If 401, try refreshing the token once and retry
   if (res.status === 401) {
     console.log('[IQPage] Got 401, attempting token refresh...');
-    const { refresh_token } = await chrome.storage.local.get('refresh_token');
+    const { refresh_token } = await chrome.storage.session.get('refresh_token');
     if (refresh_token) {
       const newJwt = await refreshToken(refresh_token);
       if (newJwt) {
