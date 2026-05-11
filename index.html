@@ -249,7 +249,7 @@ footer a:hover{color:#fff}
 .toggle-switch input:checked+.toggle-slider::before{transform:translateX(24px);}
 .annual-badge{background:rgba(34,197,94,0.12);color:#16a34a;font-size:12px;font-weight:600;padding:3px 10px;border-radius:100px;}
 .price-original{font-size:14px;color:var(--muted);text-decoration:line-through;margin-right:4px;}
-.plan-price.annual-mode{font-size:32px;}
+.plan-price.annual-mode{font-size:32px;display:flex;align-items:baseline;}
 .plan-price-original{font-size:13px;color:var(--muted);text-decoration:line-through;margin-bottom:2px;}
 .plan-billing-note{font-size:11px;color:#16a34a;font-weight:600;margin-top:4px;}
 .showcase{padding:100px 24px;background:var(--ink);color:#fff;position:relative;overflow:hidden;}
@@ -660,6 +660,7 @@ function toggleBilling(){
       // Tachado original — above .plan-price, small font via CSS class
       const originalEl=document.createElement('div');
       originalEl.className='plan-price-original';
+      if(card.classList.contains('featured'))originalEl.style.color='rgba(255,255,255,0.6)';
       originalEl.textContent=`${d.original}/mo`;
       priceEl.insertAdjacentElement('beforebegin',originalEl);
 
