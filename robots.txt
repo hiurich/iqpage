@@ -1,4 +1,5 @@
-User-agent: *
+User-agent: facebookexternalhit
 Allow: /
 
-Sitemap: https://iqpage.app/sitemap.xml
+User-agent: *
+Allow: /
