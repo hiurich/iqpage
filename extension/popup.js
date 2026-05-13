@@ -82,7 +82,7 @@ function clearLoading() { hide($('loading-overlay')); }
 
 function showResult(label, content) {
   if ($('result-label')) $('result-label').textContent = label;
-  if ($('result-content')) $('result-content').textContent = content;
+  if ($('result-content')) $('result-content').innerHTML = typeof marked !== 'undefined' ? marked.parse(content) : content.replace(/\n/g, '<br>');
   hide($('reading-questions'));
   show($('result-area'));
 }
@@ -212,6 +212,16 @@ async function init() {
         }
       })
       .catch(() => {});
+
+    chrome.tabs.onActivated.addListener(() => {
+      sendMsg('API_REQUEST', { endpoint: '/api/me', method: 'GET' })
+        .then((data) => {
+          if (!data || data.error) return;
+          setPlanBadge(data.plan ?? 'free');
+          enforcePlanFeatures(data.plan ?? 'free');
+        })
+        .catch(() => {});
+    });
 
   } catch (err) {
     console.error('Init error:', err);

@@ -202,6 +202,13 @@ body {
   padding: 12px; color: #cbd5e1; font-size: 12px; line-height: 1.7;
   max-height: 280px; overflow-y: auto; white-space: pre-wrap;
 }
+#result-content h1, #result-content h2, #result-content h3 { font-weight: 700; margin-bottom: 8px; color: rgba(255,255,255,0.95); }
+#result-content h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+#result-content strong { font-weight: 700; }
+#result-content ul, #result-content ol { padding-left: 16px; margin-bottom: 8px; }
+#result-content li { margin-bottom: 4px; font-size: 13px; }
+#result-content p { margin-bottom: 8px; }
+#result-content hr { border-color: rgba(255,255,255,0.15); margin: 12px 0; }
 .reading-questions { padding: 10px 12px; border-top: 1px solid #2d2d44; background: #0f0f1a; }
 .reading-questions .rq-label { color: #4ade80; font-size: 11px; font-weight: 700; margin-bottom: 6px; }
 .reading-questions ol { padding-left: 16px; color: #94a3b8; font-size: 12px; }
