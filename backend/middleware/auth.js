@@ -1,4 +1,5 @@
 const supabase = require('../utils/supabase');
+const { sendWelcomeEmail } = require('../utils/sendWelcomeEmail');
 
 /**
  * Validates Supabase JWT from Authorization header.
@@ -19,12 +20,20 @@ async function authMiddleware(req, res, next) {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, email, plan, stripe_customer_id, subscription_end, summaries_used, qa_used, highlights_used, daily_api_cost, last_reset_date')
+    .select('id, email, plan, stripe_customer_id, subscription_end, summaries_used, qa_used, highlights_used, daily_api_cost, last_reset_date, created_at')
     .eq('id', user.id)
     .single();
 
   if (profileError || !profile) {
     return res.status(403).json({ error: 'User profile not found' });
+  }
+
+  // Fire welcome email for brand-new profiles (created in the last 5 minutes)
+  if (profile.created_at) {
+    const ageMs = Date.now() - new Date(profile.created_at).getTime();
+    if (ageMs < 5 * 60 * 1000) {
+      sendWelcomeEmail(user.email);
+    }
   }
 
   req.user = { ...user, profile };
