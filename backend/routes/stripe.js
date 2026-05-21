@@ -25,6 +25,18 @@ function validateRedirectUrl(url, fallback) {
   return fallback;
 }
 
+async function reportGoogleAdsConversion(value) {
+  const conversionId = process.env.GOOGLE_ADS_CONVERSION_ID;
+  const label = process.env.GOOGLE_ADS_CONVERSION_LABEL;
+  if (!conversionId || !label) return;
+  const url = `https://www.googleadservices.com/pagead/conversion/${conversionId}/?value=${value}&currency_code=USD&label=${encodeURIComponent(label)}&guid=ON&script=0`;
+  try {
+    await fetch(url);
+  } catch (err) {
+    console.error('Google Ads conversion reporting error:', err.message);
+  }
+}
+
 const PRICE_TO_PLAN = {
   [process.env.STRIPE_PRICE_PRO]: 'pro',
   [process.env.STRIPE_PRICE_EDU]: 'edu',
@@ -102,6 +114,8 @@ router.post('/webhook', async (req, res) => {
           plan,
           subscription_end: subEnd ? new Date(subEnd * 1000).toISOString() : null,
         }).eq('id', userId);
+
+        await reportGoogleAdsConversion(12);
       }
       break;
     }
