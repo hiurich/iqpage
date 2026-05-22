@@ -87,6 +87,27 @@ router.post('/create-checkout-session', async (req, res) => {
   }
 });
 
+// POST /api/create-portal-session
+router.post('/create-portal-session', async (req, res) => {
+  const { profile } = req.user;
+
+  if (!profile.stripe_customer_id) {
+    return res.status(400).json({ error: 'No active subscription found' });
+  }
+
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: profile.stripe_customer_id,
+      return_url: 'https://iqpage.app',
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error('Stripe portal error:', err);
+    res.status(500).json({ error: 'Failed to create portal session' });
+  }
+});
+
 // POST /stripe/webhook — raw body, no auth middleware
 router.post('/webhook', async (req, res) => {
   const sig = req.headers['stripe-signature'];
