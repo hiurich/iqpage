@@ -105,15 +105,23 @@ router.post('/webhook', async (req, res) => {
     case 'checkout.session.completed': {
       const userId = session.metadata?.supabase_user_id;
       const plan = session.metadata?.plan;
-      if (userId && plan) {
+      const email = !userId ? session.customer_details?.email : null;
+
+      if (plan && (userId || email)) {
         const subEnd = session.subscription
           ? (await stripe.subscriptions.retrieve(session.subscription)).current_period_end
           : null;
 
-        await supabase.from('profiles').update({
+        const updatePayload = {
           plan,
           subscription_end: subEnd ? new Date(subEnd * 1000).toISOString() : null,
-        }).eq('id', userId);
+        };
+
+        if (userId) {
+          await supabase.from('profiles').update(updatePayload).eq('id', userId);
+        } else {
+          await supabase.from('profiles').update(updatePayload).eq('email', email);
+        }
 
         await reportGoogleAdsConversion(12);
       }
