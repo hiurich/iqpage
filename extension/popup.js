@@ -121,6 +121,16 @@ function setPlanBadge(plan) {
       upgradeBtn.classList.remove('hide-for-paid');
     }
   }
+
+  // Show manage subscription link only for paid plans
+  const manageSubLink = $('menu-manage-subscription');
+  if (manageSubLink) {
+    if (plan !== 'free') {
+      show(manageSubLink);
+    } else {
+      hide(manageSubLink);
+    }
+  }
 }
 
 function enforcePlanFeatures(plan) {
@@ -288,6 +298,29 @@ if (upgradeHeaderBtn) {
     e.preventDefault();
     phCapture('upgrade_clicked');
     chrome.tabs.create({ url: 'https://iqpage.app/#pricing' });
+  });
+}
+
+const manageSubLink = $('menu-manage-subscription');
+if (manageSubLink) {
+  manageSubLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    hide(dropdownMenu);
+    try {
+      const response = await sendMsg('API_REQUEST', {
+        endpoint: '/api/create-portal-session',
+        method: 'POST',
+        body: {},
+      });
+      const portalUrl = response?.url;
+      if (portalUrl && typeof portalUrl === 'string' && portalUrl.startsWith('http')) {
+        chrome.tabs.create({ url: portalUrl });
+      } else {
+        showError('Could not open subscription portal. Please try again.');
+      }
+    } catch (err) {
+      showError(`Portal error: ${err.message}`);
+    }
   });
 }
 
