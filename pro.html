@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IQPage Pro — AI Summarizer Powered by Claude | Summarize Any Webpage in 10 Seconds</title>
+<meta name="description" content="IQPage Pro summarizes any webpage in 10 seconds, lets you chat with content, and detects bias — powered by Claude AI. $12/month."/>
+<meta property="og:title" content="IQPage Pro — Summarize Any Webpage in 10 Seconds"/>
+<meta property="og:description" content="AI Chrome extension powered by Claude. Summaries, Q&A, and bias detection in seconds."/>
+<meta property="og:url" content="https://iqpage.app/pro"/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── TOKENS ── */
+:root{
+  --bg:#08080f;
+  --surface:#0f0f1c;
+  --card:#13131f;
+  --card-border:rgba(255,255,255,0.07);
+  --violet:#5b4fff;
+  --violet-dim:rgba(91,79,255,0.15);
+  --violet-glow:rgba(91,79,255,0.35);
+  --accent:#ff5c35;
+  --gold:#f5c842;
+  --text:#ece9ff;
+  --muted:rgba(255,255,255,0.42);
+  --faint:rgba(255,255,255,0.1);
+  --font-head:"Syne",sans-serif;
+  --font-body:"DM Sans",sans-serif;
+  --r:18px;
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  overflow-x:hidden;
+  line-height:1.65;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:0.025;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:16px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(8,8,15,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--card-border);
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-head);font-weight:800;font-size:18px;
+  color:var(--text);text-decoration:none;
+}
+.nav-logo-mark{
+  width:32px;height:32px;
+  background:var(--violet);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:#fff;
+  box-shadow:0 0 16px var(--violet-glow);
+}
+.nav-badge{
+  background:var(--violet-dim);
+  border:1px solid rgba(91,79,255,0.3);
+  color:#a99eff;
+  font-size:11px;font-weight:600;
+  padding:3px 10px;border-radius:100px;
+  letter-spacing:0.5px;
+}
+.nav-cta{
+  background:var(--violet);color:#fff;
+  border:none;padding:10px 22px;border-radius:100px;
+  font-family:var(--font-body);font-size:14px;font-weight:500;
+  cursor:pointer;text-decoration:none;
+  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 0 20px var(--violet-glow);
+}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 0 32px var(--violet-glow)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+  padding:140px 24px 100px;
+  position:relative;overflow:hidden;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(91,79,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91,79,255,0.06) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
+  pointer-events:none;
+}
+.hero-glow{
+  position:absolute;
+  width:900px;height:900px;
+  background:radial-gradient(circle, rgba(91,79,255,0.18) 0%, transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+.hero-glow-accent{
+  position:absolute;
+  width:400px;height:400px;
+  background:radial-gradient(circle, rgba(255,92,53,0.1) 0%, transparent 65%);
+  bottom:-100px;right:-50px;
+  pointer-events:none;
+}
+.hero-inner{position:relative;z-index:1;max-width:860px;}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(91,79,255,0.12);
+  border:1px solid rgba(91,79,255,0.25);
+  border-radius:100px;padding:6px 18px;
+  font-size:12px;font-weight:600;
+  color:#a99eff;
+  letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:32px;
+  animation:fadeUp .5s ease both;
+}
+.eyebrow-dot{
+  width:6px;height:6px;
+  background:#22c55e;border-radius:50%;
+  box-shadow:0 0 6px #22c55e;
+  animation:pulse-green 2s infinite;
+}
+@keyframes pulse-green{
+  0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.6)}
+  70%{box-shadow:0 0 0 6px rgba(34,197,94,0)}
+}
+
+h1{
+  font-family:var(--font-head);
+  font-size:clamp(44px,7.5vw,90px);
+  font-weight:800;
+  line-height:1.0;
+  letter-spacing:-3px;
+  margin-bottom:28px;
+  animation:fadeUp .6s .1s ease both;
+}
+h1 .line-1{display:block;color:var(--text)}
+h1 .hl{
+  background:linear-gradient(135deg,#a99eff 0%,#5b4fff 50%,#ff5c35 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+h1 .num{
+  font-size:0.9em;
+  color:var(--gold);
+  -webkit-text-fill-color:var(--gold);
+  font-variant-numeric:tabular-nums;
+}
+
+.hero-sub{
+  font-size:clamp(16px,2.2vw,20px);
+  color:var(--muted);
+  max-width:520px;margin:0 auto 48px;
+  font-weight:300;line-height:1.7;
+  animation:fadeUp .6s .2s ease both;
+}
+.hero-sub strong{color:var(--text);font-weight:500}
+
+.hero-cta-group{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  animation:fadeUp .6s .3s ease both;
+}
+.btn-hero{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--violet);color:#fff;
+  border:none;
+  padding:18px 40px;border-radius:100px;
+  font-family:var(--font-body);font-size:17px;font-weight:500;
+  cursor:pointer;text-decoration:none;
+  transition:transform .25s,box-shadow .25s;
+  box-shadow:0 0 40px rgba(91,79,255,0.5),0 4px 20px rgba(0,0,0,0.4);
+  position:relative;overflow:hidden;
+}
+.btn-hero::after{
+  content:"";
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,transparent 60%);
+  pointer-events:none;
+}
+.btn-hero:hover{
+  transform:translateY(-3px);
+  box-shadow:0 0 60px rgba(91,79,255,0.65),0 12px 40px rgba(0,0,0,0.5);
+}
+.btn-hero svg{flex-shrink:0}
+.hero-fine{
+  font-size:13px;color:var(--muted);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;
+}
+.hero-fine span{display:flex;align-items:center;gap:5px}
+.hero-fine .tick{color:#22c55e;font-weight:700}
+
+/* timer badge */
+.timer-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(245,200,66,0.08);
+  border:1px solid rgba(245,200,66,0.2);
+  border-radius:12px;padding:10px 20px;
+  margin:40px auto 0;
+  animation:fadeUp .6s .45s ease both;
+}
+.timer-badge p{font-size:13px;color:rgba(245,200,66,0.7);margin:0;font-weight:500}
+.timer-badge strong{color:var(--gold);font-family:var(--font-head);font-size:15px}
+.timer-icon{font-size:18px}
+
+/* ── PROOF BAR ── */
+.proof{
+  padding:28px 24px;
+  border-top:1px solid var(--card-border);
+  border-bottom:1px solid var(--card-border);
+  background:var(--surface);
+  position:relative;z-index:1;
+}
+.proof-inner{
+  max-width:960px;margin:0 auto;
+  display:flex;align-items:center;justify-content:center;
+  gap:40px;flex-wrap:wrap;
+}
+.proof-item{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--muted);
+}
+.proof-item strong{color:var(--text);font-weight:600;font-size:16px;font-family:var(--font-head)}
+.proof-divider{width:1px;height:24px;background:var(--card-border);flex-shrink:0}
+
+/* ── POWERED BY ── */
+.powered{
+  text-align:center;padding:60px 24px 0;
+  position:relative;z-index:1;
+}
+.powered-label{
+  font-size:11px;text-transform:uppercase;letter-spacing:2px;
+  color:rgba(255,255,255,0.25);margin-bottom:14px;
+}
+.powered-chip{
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(255,163,113,0.07);
+  border:1px solid rgba(255,163,113,0.18);
+  border-radius:100px;padding:8px 20px;
+  font-size:14px;font-weight:500;color:rgba(255,163,113,0.9);
+}
+.claude-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:linear-gradient(135deg,#ff9a6c,#ff6b35);
+  box-shadow:0 0 8px rgba(255,107,53,0.6);
+}
+
+/* ── FEATURES ── */
+.features{
+  padding:110px 24px;
+  max-width:1080px;margin:0 auto;
+  position:relative;z-index:1;
+}
+.section-eyebrow{
+  font-size:11px;text-transform:uppercase;
+  letter-spacing:2.5px;color:#7c6fff;font-weight:600;
+  margin-bottom:16px;
+}
+.section-title{
+  font-family:var(--font-head);
+  font-size:clamp(32px,4.5vw,54px);
+  font-weight:800;line-height:1.05;
+  letter-spacing:-1.5px;
+  margin-bottom:70px;
+}
+.section-title em{
+  font-style:normal;
+  background:linear-gradient(90deg,#a99eff,#5b4fff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.features-stack{
+  display:flex;flex-direction:column;gap:3px;
+}
+.feat{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;align-items:stretch;
+  border-radius:var(--r);overflow:hidden;
+  border:1px solid var(--card-border);
+  background:var(--card);
+  transition:border-color .3s;
+  opacity:0;transform:translateY(24px);
+}
+.feat.visible{animation:fadeUp .55s ease forwards}
+.feat:hover{border-color:rgba(91,79,255,0.3)}
+.feat-info{
+  padding:52px 48px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.feat-number{
+  font-family:var(--font-head);
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,0.2);
+  margin-bottom:24px;
+}
+.feat-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;margin-bottom:24px;
+  flex-shrink:0;
+}
+.feat h3{
+  font-family:var(--font-head);
+  font-size:clamp(22px,3vw,32px);font-weight:800;
+  letter-spacing:-0.5px;line-height:1.1;
+  margin-bottom:14px;
+}
+.feat p{font-size:16px;color:var(--muted);line-height:1.7;max-width:380px}
+.feat-tag{
+  display:inline-block;margin-top:20px;
+  font-size:11px;font-weight:600;
+  padding:4px 12px;border-radius:100px;
+  letter-spacing:0.5px;text-transform:uppercase;
+  align-self:flex-start;
+}
+.tag-pro{background:rgba(91,79,255,0.18);color:#a99eff;border:1px solid rgba(91,79,255,0.25)}
+.tag-free{background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.2)}
+
+.feat-visual{
+  border-left:1px solid var(--card-border);
+  background:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  padding:40px;
+  min-height:320px;
+  position:relative;overflow:hidden;
+}
+.feat-visual::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%, rgba(91,79,255,0.06) 0%, transparent 70%);
+}
+
+/* Visual: Summarize */
+.viz-summary{
+  width:100%;max-width:300px;
+  background:var(--card);border-radius:14px;
+  border:1px solid var(--card-border);
+  overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,0.5);
+  position:relative;z-index:1;
+}
+.viz-header{
+  padding:12px 16px;
+  border-bottom:1px solid var(--card-border);
+  display:flex;align-items:center;gap:8px;
+}
+.viz-logo{
+  width:22px;height:22px;background:var(--violet);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;color:#fff;
+}
+.viz-title{font-size:12px;font-weight:600;color:var(--text)}
+.viz-body{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.viz-line{height:8px;border-radius:4px;background:rgba(255,255,255,0.08);animation:shimmer 2s infinite}
+.viz-line.w60{width:60%}.viz-line.w80{width:80%}.viz-line.w45{width:45%}.viz-line.w70{width:70%}.viz-line.w35{width:35%}.viz-line.w90{width:90%}
+@keyframes shimmer{0%,100%{opacity:0.5}50%{opacity:1}}
+.viz-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(91,79,255,0.15);border-radius:6px;
+  padding:6px 10px;font-size:11px;color:#a99eff;
+  margin-top:6px;align-self:flex-start;
+}
+.viz-check{color:#22c55e;font-size:13px;font-weight:700}
+
+/* Visual: Chat */
+.viz-chat{
+  width:100%;max-width:300px;
+  display:flex;flex-direction:column;gap:10px;
+  position:relative;z-index:1;
+}
+.msg{border-radius:14px;padding:10px 14px;font-size:13px;line-height:1.5;max-width:220px}
+.msg-user{
+  background:var(--violet);color:#fff;
+  align-self:flex-end;border-bottom-right-radius:4px;
+  box-shadow:0 4px 16px rgba(91,79,255,0.3);
+}
+.msg-ai{
+  background:var(--card);color:var(--text);
+  border:1px solid var(--card-border);
+  align-self:flex-start;border-bottom-left-radius:4px;
+}
+.msg-ai strong{color:#a99eff}
+.typing{
+  display:flex;align-items:center;gap:4px;
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:14px;padding:12px 16px;
+  align-self:flex-start;
+}
+.typing-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--muted);
+  animation:typing-anim 1.2s infinite;
+}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typing-anim{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+/* Visual: Bias */
+.viz-bias{
+  width:100%;max-width:300px;
+  background:var(--card);border-radius:14px;
+  border:1px solid var(--card-border);
+  overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,0.5);
+  position:relative;z-index:1;
+}
+.bias-header{
+  padding:12px 16px;border-bottom:1px solid var(--card-border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.bias-label{font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.bias-score{
+  background:rgba(245,200,66,0.15);
+  color:var(--gold);font-size:11px;font-weight:700;
+  padding:2px 8px;border-radius:6px;
+}
+.bias-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.bias-item{display:flex;flex-direction:column;gap:5px}
+.bias-item-label{font-size:11px;color:var(--muted);display:flex;justify-content:space-between}
+.bias-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.07)}
+.bias-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.bf-high{background:linear-gradient(90deg,#ff5c35,#ff8c35);width:72%}
+.bf-med{background:linear-gradient(90deg,var(--gold),#fdd835);width:45%}
+.bf-low{background:linear-gradient(90deg,#22c55e,#4ade80);width:22%}
+.bias-footer{
+  padding:10px 16px;border-top:1px solid var(--card-border);
+  font-size:11px;color:rgba(255,92,53,0.7);
+  display:flex;align-items:center;gap:5px;
+}
+
+/* ── PRICING ── */
+.pricing{
+  padding:110px 24px;
+  background:var(--surface);
+  border-top:1px solid var(--card-border);
+  border-bottom:1px solid var(--card-border);
+  position:relative;overflow:hidden;
+}
+.pricing::before{
+  content:"";
+  position:absolute;
+  width:700px;height:700px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(91,79,255,0.07) 0%, transparent 65%);
+  top:-200px;left:50%;transform:translateX(-50%);
+  pointer-events:none;
+}
+.pricing-inner{max-width:960px;margin:0 auto;text-align:center;position:relative;z-index:1}
+
+.pricing-grid{
+  display:grid;
+  grid-template-columns:1fr 1.08fr 1fr;
+  gap:16px;margin-top:60px;
+}
+.plan{
+  border-radius:var(--r);
+  border:1px solid var(--card-border);
+  background:var(--card);
+  padding:36px 28px;text-align:left;
+  opacity:0;transform:translateY(20px);
+  position:relative;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s;
+}
+.plan.visible{animation:fadeUp .55s ease forwards}
+.plan:hover{border-color:rgba(91,79,255,0.2)}
+.plan.featured{
+  border-color:var(--violet);
+  box-shadow:0 0 0 1px var(--violet), 0 0 60px rgba(91,79,255,0.18);
+}
+.plan.featured::before{
+  content:"";
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--violet),#a99eff,transparent);
+}
+.plan-badge{
+  position:absolute;top:20px;right:20px;
+  background:var(--violet);color:#fff;
+  font-size:10px;font-weight:700;
+  padding:3px 10px;border-radius:100px;
+  letter-spacing:1px;text-transform:uppercase;
+  box-shadow:0 2px 12px var(--violet-glow);
+}
+.plan-name{
+  font-family:var(--font-head);
+  font-size:13px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;
+  color:var(--muted);margin-bottom:20px;
+}
+.plan.featured .plan-name{color:#a99eff}
+.plan-price{
+  font-family:var(--font-head);
+  font-size:48px;font-weight:800;
+  letter-spacing:-2px;line-height:1;
+  margin-bottom:4px;
+}
+.plan-price sup{font-size:24px;vertical-align:super;letter-spacing:0}
+.plan-period{font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0;margin-left:2px}
+.plan-tagline{font-size:13px;color:var(--muted);margin:10px 0 28px;line-height:1.5}
+.plan.featured .plan-tagline{color:rgba(169,158,255,0.7)}
+.plan-sep{height:1px;background:var(--card-border);margin-bottom:24px}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
+.plan-feat{
+  font-size:14px;color:rgba(255,255,255,0.7);
+  display:flex;align-items:flex-start;gap:10px;line-height:1.4;
+}
+.check{color:var(--violet);font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px}
+.plan.featured .check{color:#a99eff}
+.plan-cta{
+  display:block;width:100%;text-align:center;
+  padding:14px;border-radius:100px;
+  font-family:var(--font-body);font-size:15px;font-weight:500;
+  cursor:pointer;text-decoration:none;
+  transition:all .2s;border:none;
+}
+.cta-ghost{
+  background:transparent;color:var(--text);
+  border:1.5px solid var(--card-border);
+}
+.cta-ghost:hover{border-color:rgba(91,79,255,0.5);color:#a99eff}
+.cta-violet{
+  background:var(--violet);color:#fff;
+  box-shadow:0 0 24px var(--violet-glow);
+}
+.cta-violet:hover{box-shadow:0 0 40px var(--violet-glow);transform:translateY(-1px)}
+.cta-outline-violet{
+  background:transparent;color:#a99eff;
+  border:1.5px solid rgba(91,79,255,0.4);
+}
+.cta-outline-violet:hover{background:var(--violet-dim);border-color:var(--violet)}
+
+/* compare note */
+.pricing-note{
+  margin-top:32px;font-size:13px;color:var(--muted);
+}
+.pricing-note a{color:#a99eff;text-decoration:none}
+.pricing-note a:hover{text-decoration:underline}
+
+/* ── FINAL CTA ── */
+.cta-final{
+  padding:120px 24px;
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.cta-final::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 50%, rgba(91,79,255,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.cta-final-inner{
+  max-width:680px;margin:0 auto;
+  position:relative;z-index:1;
+}
+.cta-final h2{
+  font-family:var(--font-head);
+  font-size:clamp(36px,6vw,68px);
+  font-weight:800;letter-spacing:-2px;line-height:1.0;
+  margin-bottom:20px;
+}
+.cta-final h2 em{
+  font-style:normal;
+  background:linear-gradient(135deg,#a99eff 0%,#5b4fff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.cta-final p{
+  font-size:18px;color:var(--muted);
+  margin-bottom:44px;line-height:1.65;
+}
+.btn-final{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--text);color:var(--bg);
+  border:none;padding:20px 48px;border-radius:100px;
+  font-family:var(--font-body);font-size:17px;font-weight:600;
+  cursor:pointer;text-decoration:none;
+  transition:transform .25s,box-shadow .25s;
+  box-shadow:0 8px 40px rgba(255,255,255,0.12);
+}
+.btn-final:hover{transform:translateY(-3px);box-shadow:0 16px 60px rgba(255,255,255,0.18)}
+.cta-final-sub{
+  margin-top:20px;font-size:13px;color:var(--muted);
+  display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.cta-final-sub span{display:flex;align-items:center;gap:5px}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--surface);
+  border-top:1px solid var(--card-border);
+  padding:32px 24px;text-align:center;
+  font-size:13px;color:rgba(255,255,255,0.3);
+}
+footer a{color:rgba(255,255,255,0.4);text-decoration:none}
+footer a:hover{color:var(--text)}
+.footer-inner{
+  max-width:960px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+}
+.footer-logo{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-head);font-weight:800;font-size:15px;
+  color:rgba(255,255,255,0.5);text-decoration:none;
+}
+.footer-logo-mark{
+  width:24px;height:24px;background:var(--violet);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;color:#fff;
+}
+.footer-links{display:flex;gap:24px;flex-wrap:wrap}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── CURSOR ── */
+body{cursor:none}
+#cur{
+  position:fixed;width:10px;height:10px;
+  background:var(--violet);border-radius:50%;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:width .15s,height .15s,background .15s;
+  mix-blend-mode:screen;
+}
+#cur-ring{
+  position:fixed;width:32px;height:32px;
+  border:1px solid rgba(91,79,255,0.5);border-radius:50%;
+  pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:left .1s ease,top .1s ease,width .15s,height .15s,opacity .15s;
+  opacity:0.6;
+}
+body:has(a:hover) #cur,body:has(button:hover) #cur{width:18px;height:18px;background:#a99eff}
+body:has(a:hover) #cur-ring,body:has(button:hover) #cur-ring{width:48px;height:48px;opacity:0.3}
+@media(hover:none){#cur,#cur-ring{display:none}body{cursor:auto}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .feat{grid-template-columns:1fr}
+  .feat-visual{border-left:none;border-top:1px solid var(--card-border);min-height:240px}
+  .pricing-grid{grid-template-columns:1fr;max-width:400px;margin:60px auto 0}
+}
+@media(max-width:768px){
+  nav{padding:14px 20px}
+  .nav-badge{display:none}
+  .hero{padding:120px 20px 80px}
+  .features{padding:80px 20px}
+  .proof-divider{display:none}
+  .feat-info{padding:36px 28px}
+  h1{letter-spacing:-2px}
+  .section-title{letter-spacing:-1px}
+}
+@media(max-width:480px){
+  .proof-inner{gap:24px}
+  .btn-hero{padding:16px 28px;font-size:15px}
+  .hero-fine{font-size:12px;gap:12px}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="https://iqpage.app" class="nav-logo">
+    <div class="nav-logo-mark">IQ</div>
+    IQPage
+    <span class="nav-badge">PRO</span>
+  </a>
+  <a href="https://buy.stripe.com/28E00i2YLgxmd5N5JU8g001" class="nav-cta" target="_blank">
+    Get Pro — $12/mo
+  </a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow-accent"></div>
+
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <span class="eyebrow-dot"></span>
+      Powered by Claude AI
+    </div>
+
+    <h1>
+      <span class="line-1">Summarize any webpage</span>
+      <span class="hl">in <span class="num">10</span> seconds.</span>
+    </h1>
+
+    <p class="hero-sub">
+      IQPage Pro turns any article, report, or webpage into a
+      <strong>sharp AI summary</strong> — then lets you chat with it,
+      question it, and detect bias. All from your browser.
+    </p>
+
+    <div class="hero-cta-group">
+      <a href="https://buy.stripe.com/28E00i2YLgxmd5N5JU8g001" class="btn-hero" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Install IQPage Pro — $12/mo
+      </a>
+      <div class="hero-fine">
+        <span><span class="tick">✓</span> Cancel anytime</span>
+        <span><span class="tick">✓</span> 200 summaries/month</span>
+        <span><span class="tick">✓</span> Claude Sonnet AI</span>
+      </div>
+    </div>
+
+    <div class="timer-badge">
+      <span class="timer-icon">⚡</span>
+      <p>Average time from install to first summary: <strong>under 45 seconds</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF BAR -->
+<div class="proof">
+  <div class="proof-inner">
+    <div class="proof-item">
+      <strong>10s</strong>
+      <span>average summary time</span>
+    </div>
+    <div class="proof-divider"></div>
+    <div class="proof-item">
+      <strong>200</strong>
+      <span>summaries per month</span>
+    </div>
+    <div class="proof-divider"></div>
+    <div class="proof-item">
+      <strong>Claude</strong>
+      <span>Sonnet — best-in-class AI</span>
+    </div>
+    <div class="proof-divider"></div>
+    <div class="proof-item">
+      <strong>Any</strong>
+      <span>webpage, article, or doc</span>
+    </div>
+    <div class="proof-divider"></div>
+    <div class="proof-item">
+      <strong>1-click</strong>
+      <span>setup, no config needed</span>
+    </div>
+  </div>
+</div>
+
+<!-- POWERED BY -->
+<div class="powered">
+  <p class="powered-label">Built on</p>
+  <div class="powered-chip">
+    <span class="claude-dot"></span>
+    Anthropic Claude AI — state-of-the-art language model
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-eyebrow">What Pro unlocks</div>
+  <div class="section-title">Three tools.<br/>One <em>smarter</em> browser.</div>
+
+  <div class="features-stack">
+
+    <!-- Feature 1: Summarize -->
+    <div class="feat">
+      <div class="feat-info">
+        <div class="feat-number">01 / Summarize</div>
+        <div class="feat-icon" style="background:rgba(91,79,255,0.15)">⚡</div>
+        <h3>Instant page summary</h3>
+        <p>Click once. In under 10 seconds, Claude reads the full page and returns a structured, no-fluff breakdown — key points, context, and what actually matters.</p>
+        <span class="feat-tag tag-pro">200/month on Pro</span>
+      </div>
+      <div class="feat-visual">
+        <div class="viz-summary">
+          <div class="viz-header">
+            <div class="viz-logo">IQ</div>
+            <div class="viz-title">IQPage Summary</div>
+            <span style="margin-left:auto;font-size:10px;color:#22c55e;font-weight:600">DONE ✓</span>
+          </div>
+          <div class="viz-body">
+            <div style="font-size:11px;color:rgba(91,79,255,0.8);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Key Points</div>
+            <div class="viz-line w90"></div>
+            <div class="viz-line w70"></div>
+            <div class="viz-line w80"></div>
+            <div class="viz-line w55"></div>
+            <div style="font-size:11px;color:rgba(91,79,255,0.8);font-weight:600;margin:10px 0 4px;text-transform:uppercase;letter-spacing:1px">Context</div>
+            <div class="viz-line w60"></div>
+            <div class="viz-line w80"></div>
+            <div class="viz-tag">
+              <span class="viz-check">✓</span>
+              Summarized in 8.3s
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 2: Chat -->
+    <div class="feat" style="animation-delay:.1s">
+      <div class="feat-info">
+        <div class="feat-number">02 / Chat</div>
+        <div class="feat-icon" style="background:rgba(79,195,247,0.12)">💬</div>
+        <h3>Q&A with any page</h3>
+        <p>Ask anything about the content and get precise, source-grounded answers. Like having a research analyst who's already read every word — and never hallucinates beyond what's on the page.</p>
+        <span class="feat-tag tag-pro">500 Q&A/month on Pro</span>
+      </div>
+      <div class="feat-visual">
+        <div class="viz-chat">
+          <div class="msg msg-user">What's the main argument here?</div>
+          <div class="msg msg-ai"><strong>The article argues</strong> that current AI regulation frameworks are misaligned with the pace of model deployment — citing three specific policy gaps.</div>
+          <div class="msg msg-user">Which gap is most urgent?</div>
+          <div class="typing">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 3: Bias Detector -->
+    <div class="feat" style="animation-delay:.2s">
+      <div class="feat-info">
+        <div class="feat-number">03 / Bias Detector</div>
+        <div class="feat-icon" style="background:rgba(245,200,66,0.1)">⚖️</div>
+        <h3>Detect bias in news</h3>
+        <p>IQPage Pro scans articles for framing bias, loaded language, and one-sided sourcing. See a visual breakdown before you form an opinion — or share one.</p>
+        <span class="feat-tag tag-pro">Pro exclusive</span>
+      </div>
+      <div class="feat-visual">
+        <div class="viz-bias">
+          <div class="bias-header">
+            <div class="bias-label">⚖️ Bias Analysis</div>
+            <div class="bias-score">Moderate</div>
+          </div>
+          <div class="bias-body">
+            <div class="bias-item">
+              <div class="bias-item-label">
+                <span>Loaded language</span>
+                <span style="color:#ff5c35">High</span>
+              </div>
+              <div class="bias-bar"><div class="bias-fill bf-high"></div></div>
+            </div>
+            <div class="bias-item">
+              <div class="bias-item-label">
+                <span>Framing bias</span>
+                <span style="color:var(--gold)">Medium</span>
+              </div>
+              <div class="bias-bar"><div class="bias-fill bf-med"></div></div>
+            </div>
+            <div class="bias-item">
+              <div class="bias-item-label">
+                <span>Source diversity</span>
+                <span style="color:#22c55e">Low</span>
+              </div>
+              <div class="bias-bar"><div class="bias-fill bf-low"></div></div>
+            </div>
+          </div>
+          <div class="bias-footer">
+            ⚠ Strong negative framing detected in paragraphs 2–4
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <div class="section-eyebrow">Plans</div>
+    <div class="section-title">Start free.<br/>Upgrade when <em>you're ready.</em></div>
+
+    <div class="pricing-grid">
+
+      <!-- Free -->
+      <div class="plan" style="animation-delay:0s">
+        <div class="plan-name">Free</div>
+        <div class="plan-price"><sup>$</sup>0</div>
+        <div class="plan-tagline">Get a feel for it — no card, no catch.</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-features">
+          <li class="plan-feat"><span class="check">✓</span>3 summaries/week</li>
+          <li class="plan-feat"><span class="check">✓</span>5 Q&amp;A/week</li>
+          <li class="plan-feat"><span class="check">✓</span>Smart highlights</li>
+          <li class="plan-feat"><span class="check">✓</span>Citation saving</li>
+          <li class="plan-feat" style="opacity:0.35"><span style="color:var(--muted)">—</span>Bias detection</li>
+          <li class="plan-feat" style="opacity:0.35"><span style="color:var(--muted)">—</span>Claude Sonnet</li>
+        </ul>
+        <a href="https://iqpage.app" class="plan-cta cta-ghost" target="_blank">
+          Install Free
+        </a>
+      </div>
+
+      <!-- Pro (featured) -->
+      <div class="plan featured" style="animation-delay:.1s">
+        <div class="plan-badge">Most Popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>$</sup>12<span class="plan-period">/mo</span></div>
+        <div class="plan-tagline">Everything you need for daily deep reading.</div>
+        <div class="plan-sep" style="background:rgba(91,79,255,0.3)"></div>
+        <ul class="plan-features">
+          <li class="plan-feat"><span class="check">✓</span>200 summaries/month</li>
+          <li class="plan-feat"><span class="check">✓</span>500 Q&amp;A/month</li>
+          <li class="plan-feat"><span class="check">✓</span><strong style="color:var(--text)">Bias detection</strong></li>
+          <li class="plan-feat"><span class="check">✓</span>PDF &amp; Word export</li>
+          <li class="plan-feat"><span class="check">✓</span><strong style="color:var(--text)">Claude Sonnet AI</strong></li>
+          <li class="plan-feat"><span class="check">✓</span>Priority support</li>
+        </ul>
+        <a href="https://buy.stripe.com/28E00i2YLgxmd5N5JU8g001" class="plan-cta cta-violet" target="_blank">
+          Start Pro — $12/mo
+        </a>
+      </div>
+
+      <!-- Power -->
+      <div class="plan" style="animation-delay:.2s">
+        <div class="plan-name">Power</div>
+        <div class="plan-price"><sup>$</sup>29<span class="plan-period">/mo</span></div>
+        <div class="plan-tagline">For researchers, journalists, and power readers.</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-features">
+          <li class="plan-feat"><span class="check">✓</span><strong style="color:var(--text)">Unlimited</strong> summaries</li>
+          <li class="plan-feat"><span class="check">✓</span>2,000 Q&amp;A/month</li>
+          <li class="plan-feat"><span class="check">✓</span>Article comparison</li>
+          <li class="plan-feat"><span class="check">✓</span>Bias detection</li>
+          <li class="plan-feat"><span class="check">✓</span>Claude Sonnet, always</li>
+          <li class="plan-feat"><span class="check">✓</span>All Pro features</li>
+        </ul>
+        <a href="https://buy.stripe.com/cNi6oGbvh5SIaXF5JU8g002" class="plan-cta cta-outline-violet" target="_blank">
+          Start Power — $29/mo
+        </a>
+      </div>
+
+    </div>
+
+    <p class="pricing-note">
+      Student or educator?
+      <a href="https://buy.stripe.com/eVqeVcfLx94U0j18W68g000" target="_blank">Edu plan — $5/mo →</a>
+    </p>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-final">
+  <div class="cta-final-inner">
+    <h2>Read faster.<br/>Think <em>deeper.</em></h2>
+    <p>
+      Install free in 30 seconds — no account needed, no credit card required.
+      Upgrade to Pro the moment you're ready.
+    </p>
+    <a href="https://iqpage.app" class="btn-final" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M10 8l6 4-6 4V8z" fill="currentColor" stroke="none"/></svg>
+      Install Free — No Card Required
+    </a>
+    <div class="cta-final-sub">
+      <span><span class="tick" style="color:#22c55e">✓</span> Free forever plan</span>
+      <span><span class="tick" style="color:#22c55e">✓</span> 30-second setup</span>
+      <span><span class="tick" style="color:#22c55e">✓</span> Upgrade anytime</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <a href="https://iqpage.app" class="footer-logo">
+      <div class="footer-logo-mark">IQ</div>
+      IQPage
+    </a>
+    <div class="footer-links">
+      <a href="https://iqpage.app">Home</a>
+      <a href="https://iqpage.app/privacy.html">Privacy</a>
+      <a href="https://iqpage.app/terms.html">Terms</a>
+      <a href="https://chromewebstore.google.com/detail/igbighpdnelefhkbaknocckccpjconln" target="_blank">Chrome Store</a>
+    </div>
+    <span>© 2025 IQPage. Powered by Anthropic Claude.</span>
+  </div>
+</footer>
+
+<script>
+/* ── CURSOR ── */
+const cur = document.getElementById('cur');
+const ring = document.getElementById('cur-ring');
+let mx = -100, my = -100, rx = -100, ry = -100;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function loop() {
+  cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(loop);
+})();
+
+/* ── SCROLL REVEAL ── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.feat, .plan').forEach(el => observer.observe(el));
+
+/* ── BIAS BAR ANIMATION ── */
+const biasObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.bias-fill').forEach(bar => {
+        const w = bar.style.width || bar.className.includes('bf-high') ? '72%' :
+                  bar.className.includes('bf-med') ? '45%' : '22%';
+        bar.style.width = '0';
+        setTimeout(() => { bar.style.width = w; }, 200);
+      });
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.viz-bias').forEach(el => biasObserver.observe(el));
+
+/* ── INSTALL BUTTON — Chrome extension deep link ── */
+const EXT_ID = 'igbighpdnelefhkbaknocckccpjconln';
+const STORE_URL = `https://chromewebstore.google.com/detail/${EXT_ID}`;
+
+document.querySelectorAll('a[href="https://iqpage.app"]').forEach(btn => {
+  if (btn.textContent.includes('Install Free')) {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const tryOpen = `chrome-extension://${EXT_ID}/popup.html`;
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = tryOpen;
+      document.body.appendChild(iframe);
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        window.open(STORE_URL, '_blank');
+      }, 500);
+    });
+  }
+});
+</script>
+</body>
+</html>
